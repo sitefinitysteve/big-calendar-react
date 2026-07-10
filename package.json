@@ -1,6 +1,6 @@
 {
   "name": "big-calendar-react",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "A fully-featured calendar component for React with 5 views, event CRUD, user filtering, and dark mode. Built with shadcn/ui and Tailwind CSS.",
   "author": "Steve McNiven-Scott <steve@sitefinitysteve.com> (https://www.sitefinitysteve.com)",
@@ -41,6 +41,7 @@
     "build:lib": "tsc --noEmit && vite build --config vite.config.lib.ts",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
+    "prepare": "npm run build:lib",
     "prepublishOnly": "npm run build:lib"
   },
   "dependencies": {
@@ -54,7 +55,7 @@
     "date-fns": "^4.1.0",
     "lucide-react": ">=0.400.0",
     "react": "^19.0.0",
-    "react-day-picker": "^9.0.0",
+    "react-day-picker": "^9.0.0 || ^10.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.0.0",
     "tailwind-merge": "^3.0.0",
@@ -85,7 +86,7 @@
     "date-fns": "^4.1.0",
     "lucide-react": "^0.469.0",
     "react": "^19.0.0",
-    "react-day-picker": "^9.5.0",
+    "react-day-picker": "^10.0.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "tailwind-merge": "^3.0.0",
