@@ -27,13 +27,14 @@ import {
 } from 'date-fns'
 
 import type { Locale } from 'date-fns'
+import { datePattern } from '@/calendar/date-format'
 import type { ICalendarCell, IEvent } from '@/calendar/interfaces'
 import type { TCalendarView, TVisibleHours, TWorkingHours } from '@/calendar/types'
 
 // ================ Header helper functions ================ //
 
 export function rangeText(view: TCalendarView, date: Date, locale?: Locale) {
-  const formatString = 'MMM d, yyyy'
+  const formatString = datePattern(locale)
   const opts = locale ? { locale } : undefined
   let start: Date
   let end: Date

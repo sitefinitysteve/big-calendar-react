@@ -125,7 +125,7 @@ The built-in Add/Edit dialogs update the local Zustand store immediately (optimi
 | `showUserSelect` | `boolean` | `true` | Toggle the user filter dropdown. |
 | `labels` | `Partial<ICalendarLabels>` | `{}` | Override any user-facing string (see i18n). |
 | `showViewTooltips` | `boolean` | `true` | Toggle view-button tooltips. |
-| `dateLocale` | `date-fns` `Locale` | — | Localizes month/day names in `format()` calls. |
+| `dateLocale` | `date-fns` `Locale` | `en-US` patterns | Localizes every rendered date and time — month/day names **and** field order and clock convention. See [Date & time formatting](#date--time-formatting). |
 | `navigateOnDayClick` | `boolean` | `true` | If `false`, a day click only fires `onDayClick` instead of switching to day view. |
 | `openDetailsOnEventClick` | `boolean` | `true` | If `false`, an event click only fires `onEventClick` without opening the details dialog. |
 | `eventCommands` | `ICalendarCommand[]` | `[]` | Custom right-click menu items for event chips. |
@@ -170,9 +170,52 @@ import { fr } from 'date-fns/locale/fr'
 ```
 
 - `labels` localizes the calendar's own strings.
-- `dateLocale` (a date-fns `Locale`) localizes month/day names produced by `format()`.
+- `dateLocale` (a date-fns `Locale`) localizes every rendered date and time — see the next section.
 - A few labels are functions for interpolation: `eventsCount(n)`, `moreEvents(n)`, `dayOfTotal(day, total)`.
 - Validation messages in the Add/Edit forms are also driven by labels via `createEventSchema(labels)`.
+
+## Date & time formatting
+
+`dateLocale` is the single option that controls how dates and times are rendered. It is optional —
+omit it and the calendar renders US English.
+
+```tsx
+import { BigCalendar } from 'big-calendar-react'
+import { frCA } from 'date-fns/locale/fr-CA'
+
+<BigCalendar view={view} onViewChange={setView} dateLocale={frCA} />
+```
+
+The calendar takes the **format patterns themselves** from the locale (date-fns' `formatLong`, which
+is CLDR data), so passing a locale changes field order and clock convention, not just the words:
+
+| Surface | no locale | `enUS` | `frCA` | `ja` |
+| --- | --- | --- | --- | --- |
+| Header range, details dialog, day-view "today" chip | `Dec 1, 2026` | `Dec 1, 2026` | `1 déc. 2026` | `2026/12/01` |
+| Agenda day heading | `Tuesday, December 1, 2026` | `Tuesday, December 1st, 2026` | `mardi 1 décembre 2026` | `2026年12月1日火曜日` |
+| Event times (week/month/agenda/day) | `2:30 PM` | `2:30 PM` | `14:30` | `14:30` |
+| Day & week hour axis | `02 PM` | `02 PM` | `14` | `14` |
+| Date + time rows in the details dialog | `Dec 1, 2026 2:30 PM` | `Dec 1, 2026, 2:30 PM` | `1 déc. 2026, 14:30` | `2026/12/01 14:30` |
+
+The hour axis follows the locale's own clock: a 24-hour locale labels it `14`, a 12-hour locale
+`02 PM`, so the axis always agrees with the event times printed beside it.
+
+The Add/Edit dialogs follow the same locale — the date field's trigger label and popover are
+localized, and the time fields drop the AM/PM control for a 24-hour locale.
+
+**Known limitation:** the week grid always starts on Sunday. `dateLocale` does not yet move it, so
+locales that start the week on Monday (`de`, `en-GB`) or Saturday (`ar`) still get a Sunday-first
+grid. This is deliberate for now — the month view's weekday header is a fixed `Sun`–`Sat` label
+list, and moving one view without the other would leave the calendar disagreeing with itself.
+
+Omitting `dateLocale` is not the same as passing `enUS`. With no locale the calendar uses its
+built-in US-English patterns, which is why the two English columns above differ on the agenda
+heading (no ordinal) and the date+time row (no comma). Pass `enUS` explicitly to get true CLDR
+US-English output.
+
+> **Passing a locale is required for correct non-English output.** Without one you get English
+> field order regardless of the `labels` you supply — `labels` translates the calendar's own strings
+> (buttons, headings), while `dateLocale` governs everything date-fns renders.
 
 ## Events-only integration
 

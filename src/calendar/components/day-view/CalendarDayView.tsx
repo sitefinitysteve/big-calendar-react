@@ -20,6 +20,11 @@ import DayViewMultiDayEventsRow from '@/calendar/components/day-view/DayViewMult
 
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import {
+  formatDate as fmtDate,
+  formatHour as fmtHour,
+  formatTime as fmtTime,
+} from '@/calendar/date-format'
 
 interface CalendarDayViewProps {
   singleDayEvents: IEvent[]
@@ -78,7 +83,7 @@ export default function CalendarDayView({
   }
 
   function formatHour(hour: number): string {
-    return format(new Date(2000, 0, 1, hour, 0, 0, 0), 'hh a')
+    return fmtHour(new Date(2000, 0, 1, hour, 0, 0, 0), locale)
   }
 
   function getEventStyle(event: IEvent, groupIndex: number) {
@@ -261,7 +266,7 @@ export default function CalendarDayView({
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                           <CalendarIcon className="size-3.5" />
                           <span className="text-sm">
-                            {format(new Date(), 'MMM d, yyyy', { locale })}
+                            {fmtDate(new Date(), locale)}
                           </span>
                         </div>
 
@@ -272,8 +277,8 @@ export default function CalendarDayView({
                               labels.allDay
                             ) : (
                               <>
-                                {format(parseISO(event.startDate), 'h:mm a')} -{' '}
-                                {format(parseISO(event.endDate), 'h:mm a')}
+                                {fmtTime(parseISO(event.startDate), locale)} -{' '}
+                                {fmtTime(parseISO(event.endDate), locale)}
                               </>
                             )}
                           </span>

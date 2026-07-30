@@ -11,12 +11,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { is24HourLocale } from '@/calendar/date-format'
 
 export default function ChangeWorkingHoursInput() {
   const workingHours = useCalendarStore((s) => s.workingHours)
   const setWorkingHours = useCalendarStore((s) => s.setWorkingHours)
   const labels = useCalendarLabels()
+  const dateLocale = useDateLocale()
 
   const DAYS_OF_WEEK = useMemo(
     () => [
@@ -102,13 +104,13 @@ export default function ChangeWorkingHoursInput() {
               <div className="flex flex-1 items-center gap-2">
                 <TimeInput
                   value={{ hour: getHours(day.index).from, minute: 0 }}
-                  hourCycle={12}
+                  hourCycle={is24HourLocale(dateLocale) ? 24 : 12}
                   onChange={(value) => handleFromChange(day.index, value)}
                 />
                 <span className="text-sm text-muted-foreground">{labels.to.toLowerCase()}</span>
                 <TimeInput
                   value={{ hour: getHours(day.index).to, minute: 0 }}
-                  hourCycle={12}
+                  hourCycle={is24HourLocale(dateLocale) ? 24 : 12}
                   onChange={(value) => handleToChange(day.index, value)}
                 />
               </div>

@@ -1,11 +1,12 @@
 import { memo } from 'react'
 import { cva } from 'class-variance-authority'
-import { format, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
 import { Clock, Text, User } from 'lucide-react'
 import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { formatTime } from '@/calendar/date-format'
 
 const agendaCardVariants = cva(
   'bc-event-card flex select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
@@ -43,6 +44,7 @@ interface AgendaEventCardProps {
 
 function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, onOpenDetails }: AgendaEventCardProps) {
   const labels = useCalendarLabels()
+  const dateLocale = useDateLocale()
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
 
   const colorVariant = badgeVariant === 'dot' ? (`${event.color}-dot` as const) : event.color
@@ -92,7 +94,7 @@ function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, onOpenDetails
                 labels.allDay
               ) : (
                 <>
-                  {format(parseISO(event.startDate), 'h:mm a')} - {format(parseISO(event.endDate), 'h:mm a')}
+                  {formatTime(parseISO(event.startDate), dateLocale)} - {formatTime(parseISO(event.endDate), dateLocale)}
                 </>
               )}
             </span>

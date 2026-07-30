@@ -1,4 +1,4 @@
-import { format, parseISO, isSameDay } from 'date-fns'
+import { parseISO, isSameDay } from 'date-fns'
 import { Calendar, Clock, Text, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { formatDate, formatDateTime } from '@/calendar/date-format'
 
 interface EventDetailsDialogProps {
   event: IEvent
@@ -34,7 +35,6 @@ export default function EventDetailsDialog({
   const labels = useCalendarLabels()
   const dateLocale = useDateLocale()
 
-  const fmtOpts = dateLocale ? { locale: dateLocale } : undefined
   const startDate = parseISO(event.startDate)
   const endDate = parseISO(event.endDate)
 
@@ -61,7 +61,7 @@ export default function EventDetailsDialog({
               <div>
                 <p className="text-sm font-medium">{labels.fieldDate}</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(startDate, 'MMM d, yyyy', fmtOpts)} ({labels.allDay})
+                  {formatDate(startDate, dateLocale)} ({labels.allDay})
                 </p>
               </div>
             </div>
@@ -72,7 +72,7 @@ export default function EventDetailsDialog({
                 <div>
                   <p className="text-sm font-medium">{labels.fieldStartDate}</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(startDate, 'MMM d, yyyy', fmtOpts)}
+                    {formatDate(startDate, dateLocale)}
                   </p>
                 </div>
               </div>
@@ -82,7 +82,7 @@ export default function EventDetailsDialog({
                 <div>
                   <p className="text-sm font-medium">{labels.fieldEndDate}</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(endDate, 'MMM d, yyyy', fmtOpts)}
+                    {formatDate(endDate, dateLocale)}
                   </p>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export default function EventDetailsDialog({
                 <div>
                   <p className="text-sm font-medium">{labels.fieldStartDate}</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(startDate, 'MMM d, yyyy h:mm a', fmtOpts)}
+                    {formatDateTime(startDate, dateLocale)}
                   </p>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function EventDetailsDialog({
                 <div>
                   <p className="text-sm font-medium">{labels.fieldEndDate}</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(endDate, 'MMM d, yyyy h:mm a', fmtOpts)}
+                    {formatDateTime(endDate, dateLocale)}
                   </p>
                 </div>
               </div>

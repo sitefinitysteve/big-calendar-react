@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { TimeInput } from '@/components/ui/time-input'
 import { SingleDayPicker } from '@/components/ui/single-day-picker'
+import { is24HourLocale } from '@/calendar/date-format'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Form,
@@ -39,7 +40,7 @@ import {
 } from '@/components/ui/dialog'
 import { createEventSchema } from '@/calendar/schemas'
 import type { TEventFormData } from '@/calendar/schemas'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
 import type { IEvent } from '@/calendar/interfaces'
 
 interface EditEventDialogProps {
@@ -75,6 +76,7 @@ export default function EditEventDialog({
   const users = useCalendarStore((s) => s.users)
   const { updateEvent } = useUpdateEvent()
   const labels = useCalendarLabels()
+  const dateLocale = useDateLocale()
 
   const schema = useMemo(() => createEventSchema(labels), [labels])
 
@@ -249,6 +251,7 @@ export default function EditEventDialog({
                     <FormLabel>{labels.fieldStartDate}</FormLabel>
                     <FormControl>
                       <SingleDayPicker
+                        locale={dateLocale}
                         value={field.value}
                         placeholder={labels.placeholderSelectDate}
                         onChange={field.onChange}
@@ -267,7 +270,7 @@ export default function EditEventDialog({
                     <FormItem className="flex-1">
                       <FormLabel>{labels.fieldStartTime}</FormLabel>
                       <FormControl>
-                        <TimeInput value={field.value} hourCycle={12} onChange={field.onChange} />
+                        <TimeInput value={field.value} hourCycle={is24HourLocale(dateLocale) ? 24 : 12} onChange={field.onChange} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -285,6 +288,7 @@ export default function EditEventDialog({
                     <FormLabel>{labels.fieldEndDate}</FormLabel>
                     <FormControl>
                       <SingleDayPicker
+                        locale={dateLocale}
                         value={field.value}
                         placeholder={labels.placeholderSelectDate}
                         onChange={field.onChange}
@@ -303,7 +307,7 @@ export default function EditEventDialog({
                     <FormItem className="flex-1">
                       <FormLabel>{labels.fieldEndTime}</FormLabel>
                       <FormControl>
-                        <TimeInput value={field.value} hourCycle={12} onChange={field.onChange} />
+                        <TimeInput value={field.value} hourCycle={is24HourLocale(dateLocale) ? 24 : 12} onChange={field.onChange} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

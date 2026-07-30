@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { format } from 'date-fns'
 import { useCurrentTime } from '@/calendar/hooks/useCurrentTime'
+import { useDateLocale } from '@/calendar/labels'
+import { formatTime } from '@/calendar/date-format'
 
 interface CalendarTimelineProps {
   firstVisibleHour: number
@@ -12,6 +13,7 @@ export default function CalendarTimeline({
   lastVisibleHour,
 }: CalendarTimelineProps) {
   const { currentTime } = useCurrentTime()
+  const dateLocale = useDateLocale()
 
   const currentHour = currentTime.getHours()
 
@@ -26,7 +28,7 @@ export default function CalendarTimeline({
     return ((minutes - visibleStartMinutes) / visibleRangeMinutes) * 100
   }, [currentTime, firstVisibleHour, lastVisibleHour])
 
-  const formattedTime = format(currentTime, 'h:mm a')
+  const formattedTime = formatTime(currentTime, dateLocale)
 
   if (!isVisible) return null
 

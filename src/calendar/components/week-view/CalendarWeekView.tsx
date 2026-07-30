@@ -16,6 +16,7 @@ import CalendarTimeline from '@/calendar/components/week-view/CalendarTimeline'
 import WeekViewMultiDayEventsRow from '@/calendar/components/week-view/WeekViewMultiDayEventsRow'
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { formatHour } from '@/calendar/date-format'
 
 interface CalendarWeekViewProps {
   singleDayEvents: IEvent[]
@@ -93,7 +94,7 @@ export default function CalendarWeekView({
   }
 
   function formatHourLabel(hour: number): string {
-    return format(new Date(new Date().setHours(hour, 0, 0, 0)), 'hh a')
+    return formatHour(new Date(new Date().setHours(hour, 0, 0, 0)), locale)
   }
 
   function handleTimeSlotClick(day: Date, hour: number, minute: number) {

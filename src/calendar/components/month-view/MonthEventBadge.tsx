@@ -1,10 +1,11 @@
 import { memo } from 'react'
 import { cva } from 'class-variance-authority'
-import { endOfDay, format, isSameDay, parseISO, startOfDay } from 'date-fns'
+import { endOfDay, isSameDay, parseISO, startOfDay } from 'date-fns'
 import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { formatTime } from '@/calendar/date-format'
 
 interface MonthEventBadgeProps {
   event: IEvent
@@ -59,6 +60,7 @@ function MonthEventBadge({
   onOpenDetails,
 }: MonthEventBadgeProps) {
   const labels = useCalendarLabels()
+  const dateLocale = useDateLocale()
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
 
   function getPosition(): 'first' | 'middle' | 'last' | 'none' {
@@ -127,7 +129,7 @@ function MonthEventBadge({
       </div>
 
       {['first', 'none'].includes(currentPosition) && !event.isAllDay && (
-        <span>{format(new Date(event.startDate), 'h:mm a')}</span>
+        <span>{formatTime(new Date(event.startDate), dateLocale)}</span>
       )}
     </div>
   )

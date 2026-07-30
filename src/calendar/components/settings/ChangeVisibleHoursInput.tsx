@@ -9,12 +9,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { is24HourLocale } from '@/calendar/date-format'
 
 export default function ChangeVisibleHoursInput() {
   const visibleHours = useCalendarStore((s) => s.visibleHours)
   const setVisibleHours = useCalendarStore((s) => s.setVisibleHours)
   const labels = useCalendarLabels()
+  const dateLocale = useDateLocale()
 
   const [from, setFrom] = useState<{ hour: number; minute: number }>({
     hour: visibleHours.from,
@@ -49,11 +51,11 @@ export default function ChangeVisibleHoursInput() {
       <div className="flex items-center gap-2">
         <div className="flex-1 space-y-1">
           <span className="text-xs text-muted-foreground">{labels.from}</span>
-          <TimeInput value={from} onChange={setFrom} hourCycle={12} />
+          <TimeInput value={from} onChange={setFrom} hourCycle={is24HourLocale(dateLocale) ? 24 : 12} />
         </div>
         <div className="flex-1 space-y-1">
           <span className="text-xs text-muted-foreground">{labels.to}</span>
-          <TimeInput value={to} onChange={setTo} hourCycle={12} />
+          <TimeInput value={to} onChange={setTo} hourCycle={is24HourLocale(dateLocale) ? 24 : 12} />
         </div>
       </div>
 

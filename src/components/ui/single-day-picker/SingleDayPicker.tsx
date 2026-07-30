@@ -1,5 +1,6 @@
 import * as React from "react"
 import { format } from "date-fns"
+import type { Locale } from "date-fns"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,12 @@ export interface SingleDayPickerProps {
   onChange: (date?: Date) => void
   placeholder?: string
   labelVariant?: "P" | "PP" | "PPP"
+  /**
+   * date-fns locale for the trigger label and the popover's month/day names.
+   * `labelVariant` is a localized-format token, so it resolves through the
+   * locale's own `formatLong` — without one it silently renders US English.
+   */
+  locale?: Locale
   className?: string
   id?: string
 }
@@ -20,6 +27,7 @@ export const SingleDayPicker: React.FC<SingleDayPickerProps> = ({
   onChange,
   placeholder = "Select a date",
   labelVariant = "PPP",
+  locale,
   className,
   id,
 }) => {
@@ -43,7 +51,9 @@ export const SingleDayPicker: React.FC<SingleDayPickerProps> = ({
             )}
           >
             {value ? (
-              <span>{format(value, labelVariant)}</span>
+              <span>
+                {format(value, labelVariant, locale ? { locale } : undefined)}
+              </span>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
@@ -52,7 +62,17 @@ export const SingleDayPicker: React.FC<SingleDayPickerProps> = ({
       />
 
       <PopoverContent align="center" className="w-fit p-0">
-        <Calendar mode="single" selected={value} onSelect={handleSelect} />
+        <Calendar
+          mode="single"
+          selected={value}
+          onSelect={handleSelect}
+          locale={locale}
+          // The calendar grids are Sunday-first everywhere (the month view's
+          // weekday header is a fixed Sun..Sat label list). Pinning the popover
+          // to match keeps one product from showing two week starts at once.
+          // Drop this line when week-start becomes locale-driven throughout.
+          weekStartsOn={0}
+        />
       </PopoverContent>
     </Popover>
   )

@@ -1,7 +1,8 @@
 import { memo, useMemo } from 'react'
-import { format, parseISO, differenceInDays, startOfDay } from 'date-fns'
+import { parseISO, differenceInDays, startOfDay } from 'date-fns'
 import type { IEvent } from '@/calendar/interfaces'
 import { useDateLocale } from '@/calendar/labels'
+import { formatLongDate } from '@/calendar/date-format'
 import AgendaEventCard from '@/calendar/components/agenda-view/AgendaEventCard'
 
 interface AgendaDayGroupProps {
@@ -33,7 +34,7 @@ function AgendaDayGroup({ date, events, multiDayEvents, onOpenDetails }: AgendaD
   return (
     <div className="space-y-2">
       <h3 className="sticky top-0 z-10 capitalize bg-background/95 py-2 text-sm font-semibold backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        {format(date, 'EEEE, MMMM d, yyyy', dateLocale ? { locale: dateLocale } : undefined)}
+        {formatLongDate(date, dateLocale)}
       </h3>
 
       <div className="space-y-2">

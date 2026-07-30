@@ -1,9 +1,11 @@
 import { memo, useMemo } from 'react'
 import { cva } from 'class-variance-authority'
-import { format, differenceInMinutes, parseISO } from 'date-fns'
+import { differenceInMinutes, parseISO } from 'date-fns'
 import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
+import { useDateLocale } from '@/calendar/labels'
+import { formatTime } from '@/calendar/date-format'
 
 interface EventBlockProps {
   event: IEvent
@@ -40,6 +42,7 @@ const calendarWeekEventCardVariants = cva(
 
 function EventBlock({ event, className, onOpenDetails }: EventBlockProps) {
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
+  const dateLocale = useDateLocale()
 
   const start = useMemo(() => parseISO(event.startDate), [event.startDate])
   const end = useMemo(() => parseISO(event.endDate), [event.endDate])
@@ -86,7 +89,7 @@ function EventBlock({ event, className, onOpenDetails }: EventBlockProps) {
 
       {durationInMinutes > 25 && !event.isAllDay && (
         <p>
-          {format(start, 'h:mm a')} - {format(end, 'h:mm a')}
+          {formatTime(start, dateLocale)} - {formatTime(end, dateLocale)}
         </p>
       )}
     </div>
