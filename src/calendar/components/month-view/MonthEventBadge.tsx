@@ -4,8 +4,10 @@ import { endOfDay, isSameDay, parseISO, startOfDay } from 'date-fns'
 import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
+import type { TLegacyEventColor } from '@/calendar/types'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
 import { formatTime } from '@/calendar/date-format'
+import { isLegacyColor, useCalendarCustomization } from '@/calendar/customization'
 
 interface MonthEventBadgeProps {
   event: IEvent
@@ -62,6 +64,8 @@ function MonthEventBadge({
   const labels = useCalendarLabels()
   const dateLocale = useDateLocale()
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
+  const { renderEvent, renderMonthEvent, selectedEventId, classNames } = useCalendarCustomization()
+  const renderer = renderMonthEvent ?? renderEvent
 
   function getPosition(): 'first' | 'middle' | 'last' | 'none' {
     if (position) return position
@@ -92,22 +96,16 @@ function MonthEventBadge({
   if (!isVisible()) return null
 
   const currentPosition = getPosition()
+  const legacy = isLegacyColor(event.color)
+  const selected = selectedEventId != null && selectedEventId === event.id
+  const legacyColor = legacy
+    ? badgeVariant === 'dot'
+      ? (`${event.color as TLegacyEventColor}-dot` as const)
+      : (event.color as TLegacyEventColor)
+    : undefined
 
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      data-event-id={event.id}
-      className={cn(
-        eventBadgeVariants({
-          color: badgeVariant === 'dot' ? `${event.color}-dot` : event.color,
-          multiDayPosition: currentPosition,
-        }),
-        className
-      )}
-      onKeyDown={handleKeyDown}
-      onClick={() => onOpenDetails?.(event)}
-    >
+  const defaultContent = (
+    <>
       <div className="flex items-center gap-1.5 truncate">
         {!['middle', 'last'].includes(currentPosition) &&
           ['mixed', 'dot'].includes(badgeVariant) && (
@@ -131,6 +129,31 @@ function MonthEventBadge({
       {['first', 'none'].includes(currentPosition) && !event.isAllDay && (
         <span>{formatTime(new Date(event.startDate), dateLocale)}</span>
       )}
+    </>
+  )
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      data-event-id={event.id}
+      data-selected={selected ? '' : undefined}
+      className={cn(
+        eventBadgeVariants({
+          color: legacyColor,
+          multiDayPosition: currentPosition,
+        }),
+        !legacy && 'bc-event-custom-color',
+        classNames?.eventBlock,
+        className
+      )}
+      style={legacy ? undefined : ({ '--bc-event-color': event.color } as React.CSSProperties)}
+      onKeyDown={handleKeyDown}
+      onClick={() => onOpenDetails?.(event)}
+    >
+      {renderer
+        ? renderer(event, { view: 'month', selected, badgeVariant, defaultContent })
+        : defaultContent}
     </div>
   )
 }

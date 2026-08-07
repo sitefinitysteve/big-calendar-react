@@ -54,8 +54,31 @@ export {
 } from '@/calendar/helpers'
 
 // Types & Interfaces
-export type { TCalendarView, TEventColor, TBadgeVariant, TWorkingHours, TVisibleHours } from '@/calendar/types'
+export type {
+  TCalendarView,
+  TEventColor,
+  TLegacyEventColor,
+  TBadgeVariant,
+  TWorkingHours,
+  TVisibleHours,
+} from '@/calendar/types'
 export type { IEvent, IUser, ICalendarCell, ICalendarCommand, ICalendarCommandSelect } from '@/calendar/interfaces'
+
+// Customization (v1.2.0)
+export {
+  CalendarCustomizationContext,
+  useCalendarCustomization,
+  isLegacyColor,
+  LEGACY_EVENT_COLORS,
+  DEFAULT_CUSTOMIZATION,
+} from '@/calendar/customization'
+export type {
+  TEventRenderer,
+  TEventRenderView,
+  IEventRenderContext,
+  ICalendarClassNames,
+  ICalendarCustomization,
+} from '@/calendar/customization'
 
 // Labels
 export type { ICalendarLabels } from '@/calendar/labels'

@@ -3,7 +3,7 @@ import { format, isToday } from 'date-fns'
 import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
-import type { TEventColor } from '@/calendar/types'
+import type { TLegacyEventColor } from '@/calendar/types'
 
 interface YearViewDayCellProps {
   day: number
@@ -14,7 +14,7 @@ interface YearViewDayCellProps {
 
 const maxIndicators = 3
 
-const colorMap: Record<TEventColor, string> = {
+const colorMap: Record<TLegacyEventColor, string> = {
   blue: 'bg-blue-600',
   green: 'bg-green-600',
   red: 'bg-red-600',
@@ -65,7 +65,7 @@ function YearViewDayCell({ day, date, events, onSelectDay }: YearViewDayCellProp
       {events.length > 0 && (
         <div className="flex items-center gap-0.5">
           {visibleDots.map((event, index) => (
-            <span key={index} className={cn('size-1.5 rounded-full', colorMap[event.color])} />
+            <span key={index} className={cn('size-1.5 rounded-full', colorMap[event.color as TLegacyEventColor])} />
           ))}
           {overflowCount > 0 && (
             <span className="text-[9px] leading-none text-muted-foreground">+{overflowCount}</span>

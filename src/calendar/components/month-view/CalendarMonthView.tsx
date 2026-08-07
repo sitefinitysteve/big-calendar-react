@@ -5,6 +5,7 @@ import { useEventPositioning } from '@/calendar/hooks/useEventPositioning'
 import DayCell from '@/calendar/components/month-view/DayCell'
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarCustomization } from '@/calendar/customization'
 
 interface CalendarMonthViewProps {
   singleDayEvents: IEvent[]
@@ -21,9 +22,15 @@ export default function CalendarMonthView({
 }: CalendarMonthViewProps) {
   const labels = useCalendarLabels()
   const selectedDate = useCalendarStore((s) => s.selectedDate)
+  const { maxEventsPerDayCell } = useCalendarCustomization()
 
   const { cells } = useCalendarGrid(selectedDate)
-  const { eventPositions } = useEventPositioning(multiDayEvents, singleDayEvents, selectedDate)
+  const { eventPositions } = useEventPositioning(
+    multiDayEvents,
+    singleDayEvents,
+    selectedDate,
+    maxEventsPerDayCell
+  )
 
   const allEvents = useMemo(
     () => [...multiDayEvents, ...singleDayEvents],

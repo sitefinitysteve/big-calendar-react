@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { useCurrentTime } from '@/calendar/hooks/useCurrentTime'
 import { useDateLocale } from '@/calendar/labels'
 import { formatTime } from '@/calendar/date-format'
+import { useCalendarCustomization } from '@/calendar/customization'
+import { cn } from '@/lib/utils'
 
 interface CalendarTimelineProps {
   firstVisibleHour: number
@@ -14,11 +16,14 @@ export default function CalendarTimeline({
 }: CalendarTimelineProps) {
   const { currentTime } = useCurrentTime()
   const dateLocale = useDateLocale()
+  const { classNames } = useCalendarCustomization()
 
   const currentHour = currentTime.getHours()
 
   const isVisible = currentHour >= firstVisibleHour && currentHour < lastVisibleHour
 
+  // Percentage of the grid's own height, which is `hours * hourHeight` — so the
+  // position stays correct for any custom `hourHeight` with no extra math.
   const currentTimePosition = useMemo(() => {
     const minutes = currentTime.getHours() * 60 + currentTime.getMinutes()
     const visibleStartMinutes = firstVisibleHour * 60
@@ -34,7 +39,10 @@ export default function CalendarTimeline({
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 z-50 border-t border-primary"
+      className={cn(
+        'pointer-events-none absolute inset-x-0 z-50 border-t border-primary',
+        classNames?.timeline
+      )}
       style={{ top: `${currentTimePosition}%` }}
     >
       <div className="absolute left-0 top-0 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />

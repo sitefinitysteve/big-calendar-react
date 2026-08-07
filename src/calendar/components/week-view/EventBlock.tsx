@@ -4,12 +4,17 @@ import { differenceInMinutes, parseISO } from 'date-fns'
 import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
+import type { TLegacyEventColor } from '@/calendar/types'
 import { useDateLocale } from '@/calendar/labels'
 import { formatTime } from '@/calendar/date-format'
+import { isLegacyColor, useCalendarCustomization } from '@/calendar/customization'
+import type { TEventRenderView } from '@/calendar/customization'
 
 interface EventBlockProps {
   event: IEvent
   className?: string
+  /** Which grid this block sits in — only affects the renderer context. */
+  view?: TEventRenderView
   onOpenDetails?: (event: IEvent) => void
 }
 
@@ -40,23 +45,50 @@ const calendarWeekEventCardVariants = cva(
   }
 )
 
-function EventBlock({ event, className, onOpenDetails }: EventBlockProps) {
+function EventBlock({ event, className, view = 'week', onOpenDetails }: EventBlockProps) {
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
   const dateLocale = useDateLocale()
+  const { renderEvent, selectedEventId, hourHeight, classNames } = useCalendarCustomization()
 
   const start = useMemo(() => parseISO(event.startDate), [event.startDate])
   const end = useMemo(() => parseISO(event.endDate), [event.endDate])
   const durationInMinutes = useMemo(() => differenceInMinutes(end, start), [end, start])
-  const heightInPixels = useMemo(() => (durationInMinutes / 60) * 96 - 8, [durationInMinutes])
-
-  const color = useMemo(
-    () => (badgeVariant === 'dot' ? (`${event.color}-dot` as const) : event.color),
-    [badgeVariant, event.color]
+  const heightInPixels = useMemo(
+    () => (durationInMinutes / 60) * hourHeight - 8,
+    [durationInMinutes, hourHeight]
   )
 
+  const legacy = isLegacyColor(event.color)
+  const selected = selectedEventId != null && selectedEventId === event.id
+  const custom = !!renderEvent
+
+  const color = useMemo(() => {
+    if (!isLegacyColor(event.color)) {
+      return undefined
+    }
+    const base = event.color as TLegacyEventColor
+    return badgeVariant === 'dot' ? (`${base}-dot` as const) : base
+  }, [badgeVariant, event.color])
+
+  // A custom renderer owns its own layout, so the single-line clamp is dropped
+  // (tailwind-merge cannot cancel `truncate`, hence the token filter).
+  const variantClasses = useMemo(() => {
+    const classes = calendarWeekEventCardVariants({ color })
+    if (!custom) {
+      return classes
+    }
+    return classes
+      .split(' ')
+      .filter((token) => token !== 'truncate' && token !== 'whitespace-nowrap')
+      .join(' ')
+  }, [color, custom])
+
   const cardClasses = cn(
-    calendarWeekEventCardVariants({ color }),
+    variantClasses,
     durationInMinutes < 35 && 'py-0 justify-center',
+    !legacy && 'bc-event-custom-color',
+    custom && selected && 'z-10',
+    classNames?.eventBlock,
     className
   )
 
@@ -67,16 +99,8 @@ function EventBlock({ event, className, onOpenDetails }: EventBlockProps) {
     }
   }
 
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      data-event-id={event.id}
-      className={cardClasses}
-      style={{ height: `${heightInPixels}px` }}
-      onKeyDown={handleKeyDown}
-      onClick={() => onOpenDetails?.(event)}
-    >
+  const defaultContent = (
+    <>
       <div className="flex items-center gap-1.5 truncate">
         {['mixed', 'dot'].includes(badgeVariant) && (
           <svg width="8" height="8" viewBox="0 0 8 8" className="event-dot shrink-0">
@@ -92,6 +116,28 @@ function EventBlock({ event, className, onOpenDetails }: EventBlockProps) {
           {formatTime(start, dateLocale)} - {formatTime(end, dateLocale)}
         </p>
       )}
+    </>
+  )
+
+  // Selected custom cards use minHeight so they can expand in place.
+  const sizeStyle =
+    custom && selected ? { minHeight: `${heightInPixels}px` } : { height: `${heightInPixels}px` }
+  const colorStyle = legacy ? undefined : ({ '--bc-event-color': event.color } as React.CSSProperties)
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      data-event-id={event.id}
+      data-selected={selected ? '' : undefined}
+      className={cardClasses}
+      style={{ ...sizeStyle, ...colorStyle }}
+      onKeyDown={handleKeyDown}
+      onClick={() => onOpenDetails?.(event)}
+    >
+      {renderEvent
+        ? renderEvent(event, { view, selected, badgeVariant, defaultContent })
+        : defaultContent}
     </div>
   )
 }

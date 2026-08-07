@@ -5,8 +5,10 @@ import { Clock, Text, User } from 'lucide-react'
 import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
+import type { TLegacyEventColor } from '@/calendar/types'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
 import { formatTime } from '@/calendar/date-format'
+import { isLegacyColor, useCalendarCustomization } from '@/calendar/customization'
 
 const agendaCardVariants = cva(
   'bc-event-card flex select-none items-center justify-between gap-3 rounded-md border p-3 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
@@ -46,8 +48,16 @@ function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, onOpenDetails
   const labels = useCalendarLabels()
   const dateLocale = useDateLocale()
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
+  const { renderEvent, renderAgendaEvent, selectedEventId, classNames } = useCalendarCustomization()
+  const renderer = renderAgendaEvent ?? renderEvent
 
-  const colorVariant = badgeVariant === 'dot' ? (`${event.color}-dot` as const) : event.color
+  const legacy = isLegacyColor(event.color)
+  const selected = selectedEventId != null && selectedEventId === event.id
+  const colorVariant = legacy
+    ? badgeVariant === 'dot'
+      ? (`${event.color as TLegacyEventColor}-dot` as const)
+      : (event.color as TLegacyEventColor)
+    : undefined
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -56,15 +66,8 @@ function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, onOpenDetails
     }
   }
 
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      data-event-id={event.id}
-      className={cn(agendaCardVariants({ color: colorVariant }))}
-      onClick={() => onOpenDetails?.(event)}
-      onKeyDown={handleKeyDown}
-    >
+  const defaultContent = (
+    <>
       <div className="flex items-center gap-3 truncate">
         {['mixed', 'dot'].includes(badgeVariant) && (
           <svg width="8" height="8" viewBox="0 0 8 8" className="event-dot shrink-0">
@@ -108,6 +111,27 @@ function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, onOpenDetails
           </div>
         </div>
       </div>
+    </>
+  )
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      data-event-id={event.id}
+      data-selected={selected ? '' : undefined}
+      className={cn(
+        agendaCardVariants({ color: colorVariant }),
+        !legacy && 'bc-event-custom-color',
+        classNames?.eventBlock
+      )}
+      style={legacy ? undefined : ({ '--bc-event-color': event.color } as React.CSSProperties)}
+      onClick={() => onOpenDetails?.(event)}
+      onKeyDown={handleKeyDown}
+    >
+      {renderer
+        ? renderer(event, { view: 'agenda', selected, badgeVariant, defaultContent })
+        : defaultContent}
     </div>
   )
 }

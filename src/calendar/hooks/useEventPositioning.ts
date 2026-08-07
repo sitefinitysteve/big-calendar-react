@@ -5,11 +5,12 @@ import { calculateMonthEventPositions } from '@/calendar/helpers'
 export function useEventPositioning(
   multiDayEvents: IEvent[],
   singleDayEvents: IEvent[],
-  selectedDate: Date
+  selectedDate: Date,
+  maxVisible = 3
 ) {
   const eventPositions = useMemo(
-    () => calculateMonthEventPositions(multiDayEvents, singleDayEvents, selectedDate),
-    [multiDayEvents, singleDayEvents, selectedDate]
+    () => calculateMonthEventPositions(multiDayEvents, singleDayEvents, selectedDate, maxVisible),
+    [multiDayEvents, singleDayEvents, selectedDate, maxVisible]
   )
   return { eventPositions }
 }

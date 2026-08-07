@@ -1,7 +1,8 @@
 import { memo } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
-import type { TEventColor } from '@/calendar/types'
+import type { TEventColor, TLegacyEventColor } from '@/calendar/types'
+import { isLegacyColor } from '@/calendar/customization'
 
 interface EventBulletProps {
   color: TEventColor
@@ -26,7 +27,17 @@ const eventBulletVariants = cva('bc-event-bullet size-2 rounded-full', {
 })
 
 function EventBullet({ color, className }: EventBulletProps) {
-  return <div className={cn(eventBulletVariants({ color }), className)} />
+  const legacy = isLegacyColor(color)
+  return (
+    <div
+      className={cn(
+        eventBulletVariants({ color: legacy ? (color as TLegacyEventColor) : undefined }),
+        !legacy && 'bc-event-custom-color',
+        className
+      )}
+      style={legacy ? undefined : ({ '--bc-event-color': color } as React.CSSProperties)}
+    />
+  )
 }
 
 export default memo(EventBullet)

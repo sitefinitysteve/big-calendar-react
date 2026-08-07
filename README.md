@@ -234,6 +234,115 @@ To drive every dialog/route yourself (no built-in Add or details dialogs), turn 
 
 Combine with `eventCommands` / `dayCommands` + `onCommand` for a fully custom right-click experience.
 
+## Customization (v1.2.0)
+
+All of these props are optional. Omit them and the calendar renders exactly as it did in 1.1.0.
+
+### Custom event chips
+
+```tsx
+<BigCalendar
+  view={view}
+  renderEvent={(event, { view, selected, defaultContent }) => (
+    selected ? <MyExpandedCard event={event} /> : defaultContent
+  )}
+  renderMonthEvent={(event) => <MyCompactBadge event={event} />}
+  renderAgendaEvent={(event) => <MyAgendaRow event={event} />}
+/>
+```
+
+`renderMonthEvent` / `renderAgendaEvent` fall back to `renderEvent` when not given.
+The renderer context is `{ view, selected, badgeVariant, defaultContent }`.
+
+### Selection
+
+Selection is controlled: the library stores nothing.
+
+```tsx
+const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
+
+<BigCalendar
+  view={view}
+  openDetailsOnEventClick={false}
+  selectedEventId={selectedEventId}
+  onSelectedEventChange={(event) => setSelectedEventId(event?.id ?? null)}
+/>
+```
+
+The matching chip gets `data-selected` (and only that one), so you can style it with
+`[&[data-selected]]:outline-2` or a plain CSS rule. A selected chip that has a custom
+renderer switches from a fixed `height` to `minHeight` and gains `z-10`, so it may grow
+past its slot.
+
+### Your own toolbar
+
+```tsx
+<BigCalendar view={view} hideHeader />
+<BigCalendar view={view} headerSlot={<MyToolbar />} />
+```
+
+### Sizing and density
+
+| Prop | Default | Effect |
+| --- | --- | --- |
+| `hourHeight` | `96` | Pixel height of one hour row in week/day views |
+| `height` | stock (736px week / 800px day) | Week/day scroll-area height |
+| `autoHeight` | `false` | Grid sizes to content instead of scrolling |
+| `maxEventsPerDayCell` | `3` | Month-view badge slots per day |
+| `onShowMore` | none | Turns "+N more" into a button firing `(yyyy-MM-dd)` |
+
+### Class hooks
+
+```tsx
+<BigCalendar
+  view={view}
+  classNames={{ root, header, dayCell, hourRow, eventBlock, timeline }}
+  dayCellClassName={(date) => (isWeekend(date) ? 'bg-muted/40' : undefined)}
+/>
+```
+
+### Open color system
+
+`event.color` accepts the seven built-in names (`blue`, `green`, `red`, `yellow`, `purple`,
+`orange`, `gray`) or **any CSS color string**. Built-ins keep their Tailwind class maps.
+Anything else renders with the class `bc-event-custom-color` plus an inline
+`--bc-event-color` variable, and the color is derived with `color-mix()`.
+
+If you do **not** import `big-calendar-react/style.css`, copy these rules into your own
+stylesheet or custom colors will render unstyled:
+
+```css
+.bc-event-custom-color {
+  border-color: color-mix(in srgb, var(--bc-event-color, currentColor) 35%, transparent);
+  background-color: color-mix(in srgb, var(--bc-event-color, currentColor) 12%, transparent);
+  color: color-mix(in srgb, var(--bc-event-color, currentColor) 85%, black);
+}
+.dark .bc-event-custom-color {
+  border-color: color-mix(in srgb, var(--bc-event-color, currentColor) 45%, transparent);
+  background-color: color-mix(in srgb, var(--bc-event-color, currentColor) 22%, transparent);
+  color: color-mix(in srgb, var(--bc-event-color, currentColor) 75%, white);
+}
+.bc-event-custom-color .event-dot { fill: var(--bc-event-color, currentColor); }
+.bc-event-bullet.bc-event-custom-color {
+  background-color: var(--bc-event-color, currentColor);
+  border-color: transparent;
+}
+@media (min-width: 1024px) {
+  .bc-day-cell-list { height: var(--bc-day-cell-list-height); flex-direction: column; }
+}
+```
+
+(The last rule only matters when you set `maxEventsPerDayCell` to something other than 3.)
+
+### Typed event metadata
+
+```ts
+type TripMeta = { sourceType: 'trip' | 'client'; sourceId: number }
+const events: IEvent<TripMeta>[] = ...
+```
+
+`meta` is optional and carried through untouched by the library.
+
 ## CSS
 
 Import the stylesheet once, anywhere in your app:

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { getMonthCellEvents } from '@/calendar/helpers'
 import type { ICalendarCell, IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarCustomization } from '@/calendar/customization'
 
 interface DayCellProps {
   cell: ICalendarCell
@@ -16,7 +17,9 @@ interface DayCellProps {
   onSelectDay?: (date: Date) => void
 }
 
-const MAX_VISIBLE_EVENTS = 3
+/** Stock list height (`lg:h-[94px]`) is sized for exactly 3 badge slots. */
+const DEFAULT_MAX_VISIBLE_EVENTS = 3
+const DEFAULT_LIST_HEIGHT = 94
 
 function DayCell({
   cell,
@@ -27,6 +30,8 @@ function DayCell({
 }: DayCellProps) {
   const labels = useCalendarLabels()
   const setSelectedDate = useCalendarStore((s) => s.setSelectedDate)
+  const { maxEventsPerDayCell, onShowMore, classNames, dayCellClassName } =
+    useCalendarCustomization()
 
   const cellEvents = useMemo(
     () => getMonthCellEvents(cell.date, events, eventPositions),
@@ -34,18 +39,33 @@ function DayCell({
   )
 
   const isSunday = cell.date.getDay() === 0
+  const isDefaultMax = maxEventsPerDayCell === DEFAULT_MAX_VISIBLE_EVENTS
+  const positions = useMemo(
+    () => Array.from({ length: maxEventsPerDayCell }, (_, i) => i),
+    [maxEventsPerDayCell]
+  )
+  const hiddenCount = cellEvents.length - maxEventsPerDayCell
 
   function handleClick() {
     setSelectedDate(cell.date)
     onSelectDay?.(cell.date)
   }
 
+  const moreLabel = (
+    <>
+      <span className="sm:hidden">+{hiddenCount}</span>
+      <span className="hidden sm:inline"> {labels.moreEvents(hiddenCount)}</span>
+    </>
+  )
+
   return (
     <div
       data-date={format(cell.date, 'yyyy-MM-dd')}
       className={cn(
         'flex h-full flex-col gap-1 border-l border-t py-1.5 lg:pb-2 lg:pt-1',
-        isSunday && 'border-l-0'
+        isSunday && 'border-l-0',
+        classNames?.dayCell,
+        dayCellClassName?.(cell.date)
       )}
     >
       <button
@@ -61,11 +81,23 @@ function DayCell({
 
       <div
         className={cn(
-          'flex h-6 gap-1 px-2 lg:h-[94px] lg:flex-col lg:gap-2 lg:px-0',
+          'flex h-6 gap-1 px-2 lg:flex-col lg:gap-2 lg:px-0',
+          isDefaultMax ? 'lg:h-[94px]' : 'bc-day-cell-list',
           !cell.currentMonth && 'opacity-50'
         )}
+        style={
+          isDefaultMax
+            ? undefined
+            : // `.bc-day-cell-list` reads this at the lg breakpoint; each slot keeps
+              // the stock ~31px so the cell grows proportionally with the cap.
+              ({
+                '--bc-day-cell-list-height': `${
+                  (DEFAULT_LIST_HEIGHT / DEFAULT_MAX_VISIBLE_EVENTS) * maxEventsPerDayCell
+                }px`,
+              } as React.CSSProperties)
+        }
       >
-        {[0, 1, 2].map((position) => {
+        {positions.map((position) => {
           const event = cellEvents.find((e) => e.position === position)
           return (
             <div key={position} className="lg:flex-1">
@@ -85,20 +117,32 @@ function DayCell({
         })}
       </div>
 
-      {cellEvents.length > MAX_VISIBLE_EVENTS && (
-        <p
-          className={cn(
-            'h-4.5 px-1.5 text-xs font-semibold text-muted-foreground',
-            !cell.currentMonth && 'opacity-50'
-          )}
-        >
-          <span className="sm:hidden">+{cellEvents.length - MAX_VISIBLE_EVENTS}</span>
-          <span className="hidden sm:inline">
-            {' '}
-            {labels.moreEvents(cellEvents.length - MAX_VISIBLE_EVENTS)}
-          </span>
-        </p>
-      )}
+      {hiddenCount > 0 &&
+        (onShowMore ? (
+          <button
+            type="button"
+            className={cn(
+              'h-4.5 px-1.5 text-left text-xs font-semibold text-muted-foreground hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+              !cell.currentMonth && 'opacity-50'
+            )}
+            onClick={() => onShowMore(format(cell.date, 'yyyy-MM-dd'))}
+          >
+            {moreLabel}
+          </button>
+        ) : (
+          <p
+            className={cn(
+              'h-4.5 px-1.5 text-xs font-semibold text-muted-foreground',
+              !cell.currentMonth && 'opacity-50'
+            )}
+          >
+            <span className="sm:hidden">+{hiddenCount}</span>
+            <span className="hidden sm:inline">
+              {' '}
+              {labels.moreEvents(hiddenCount)}
+            </span>
+          </p>
+        ))}
     </div>
   )
 }

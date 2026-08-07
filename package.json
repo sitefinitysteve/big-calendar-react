@@ -1,6 +1,6 @@
 {
   "name": "big-calendar-react",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "A fully-featured calendar component for React with 5 views, event CRUD, user filtering, and dark mode. Built with shadcn/ui and Tailwind CSS.",
   "author": "Steve McNiven-Scott <steve@sitefinitysteve.com> (https://www.sitefinitysteve.com)",
@@ -40,6 +40,8 @@
     "build": "tsc --noEmit && vite build",
     "build:lib": "tsc --noEmit && vite build --config vite.config.lib.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview",
     "prepare": "npm run build:lib",
     "prepublishOnly": "npm run build:lib"
@@ -77,6 +79,8 @@
     "@base-ui/react": "1.6.0",
     "@hookform/resolvers": "^3.9.1",
     "@tailwindcss/vite": "^4.3.2",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
@@ -84,6 +88,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "jsdom": "^30.0.1",
     "lucide-react": "^0.469.0",
     "react": "^19.0.0",
     "react-day-picker": "^10.0.1",
@@ -95,6 +100,7 @@
     "typescript": "^5.9.3",
     "vite": "^6.0.7",
     "vite-plugin-dts": "^4.4.0",
+    "vitest": "^3.2.7",
     "zod": "^3.24.1",
     "zustand": "^5.0.3"
   }

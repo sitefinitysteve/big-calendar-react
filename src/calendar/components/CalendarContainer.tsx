@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import type { MouseEvent as ReactMouseEvent } from 'react'
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import { format } from 'date-fns'
 import type { Locale } from 'date-fns'
 import { Pencil, Trash2 } from 'lucide-react'
@@ -12,6 +12,13 @@ import {
   CalendarFlagsContext,
   CalendarDateLocaleContext,
 } from '@/calendar/labels'
+import type {
+  ICalendarClassNames,
+  ICalendarCustomization,
+  TEventRenderer,
+} from '@/calendar/customization'
+import { CalendarCustomizationContext } from '@/calendar/customization'
+import { cn } from '@/lib/utils'
 import { useCalendarStore } from '@/stores/calendar'
 import { useFilteredEvents } from '@/calendar/hooks/useFilteredEvents'
 import CalendarContextMenu from '@/calendar/components/CalendarContextMenu'
@@ -67,6 +74,36 @@ export interface BigCalendarProps {
   // Fired when a right-click menu command is selected. The library performs no
   // action itself — the consumer handles the command (e.g. open its own editor).
   onCommand?: (payload: ICalendarCommandSelect) => void
+
+  // ---- Customization (all optional; omitting every one renders v1.1.0 output) ----
+  /** Replace the contents of every event chip. Receives the default markup. */
+  renderEvent?: TEventRenderer
+  /** Month-view override; falls back to `renderEvent`. */
+  renderMonthEvent?: TEventRenderer
+  /** Agenda-view override; falls back to `renderEvent`. */
+  renderAgendaEvent?: TEventRenderer
+  /** Hide the built-in header entirely (bring your own toolbar). */
+  hideHeader?: boolean
+  /** Rendered in place of the built-in header. Ignored when `hideHeader`. */
+  headerSlot?: ReactNode
+  /** Controlled selection: the library holds no selection state of its own. */
+  selectedEventId?: number | null
+  /** Fired alongside `onEventClick` when an event chip is clicked. */
+  onSelectedEventChange?: (event: IEvent | null) => void
+  /** Pixel height of one hour row in week/day views. Default 96. */
+  hourHeight?: number
+  /** Week/day scroll-area height. Defaults to the stock 736px (week) / 800px (day). */
+  height?: number | string
+  /** Let the week/day grid size to its content instead of scrolling. */
+  autoHeight?: boolean
+  /** Month-view event slots per day cell. Default 3. */
+  maxEventsPerDayCell?: number
+  /** When provided, the month "+N more" label becomes a button firing this with `yyyy-MM-dd`. */
+  onShowMore?: (date: string) => void
+  /** Extra classes merged onto the library's structural elements. */
+  classNames?: ICalendarClassNames
+  /** Per-day extra classes for month-view cells. */
+  dayCellClassName?: (date: Date) => string | undefined
 }
 
 type MenuTarget = { type: 'event'; event: IEvent } | { type: 'day'; date: string }
@@ -96,11 +133,54 @@ export default function BigCalendar({
   onDayContextMenu,
   onEventContextMenu,
   onCommand,
+  renderEvent,
+  renderMonthEvent,
+  renderAgendaEvent,
+  hideHeader = false,
+  headerSlot,
+  selectedEventId,
+  onSelectedEventChange,
+  hourHeight = 96,
+  height,
+  autoHeight,
+  maxEventsPerDayCell = 3,
+  onShowMore,
+  classNames,
+  dayCellClassName,
 }: BigCalendarProps) {
   const deleteEvent = useCalendarStore((s) => s.deleteEvent)
 
   const mergedLabels = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels])
   const flags = useMemo(() => ({ showViewTooltips }), [showViewTooltips])
+
+  const customization = useMemo<ICalendarCustomization>(
+    () => ({
+      renderEvent,
+      renderMonthEvent,
+      renderAgendaEvent,
+      selectedEventId,
+      hourHeight,
+      height,
+      autoHeight,
+      maxEventsPerDayCell,
+      onShowMore,
+      classNames,
+      dayCellClassName,
+    }),
+    [
+      renderEvent,
+      renderMonthEvent,
+      renderAgendaEvent,
+      selectedEventId,
+      hourHeight,
+      height,
+      autoHeight,
+      maxEventsPerDayCell,
+      onShowMore,
+      classNames,
+      dayCellClassName,
+    ]
+  )
 
   const { filteredEvents, singleDayEvents, multiDayEvents } = useFilteredEvents(view)
 
@@ -130,6 +210,7 @@ export default function BigCalendar({
   const handleOpenDetails = useCallback(
     (event: IEvent) => {
       onEventClick?.(event)
+      onSelectedEventChange?.(event)
       // Built-in read dialog is opt-out: set `openDetailsOnEventClick={false}` to
       // handle event clicks entirely in your own app.
       if (openDetailsOnEventClick) {
@@ -137,7 +218,7 @@ export default function BigCalendar({
         setDetailsOpen(true)
       }
     },
-    [onEventClick, openDetailsOnEventClick]
+    [onEventClick, onSelectedEventChange, openDetailsOnEventClick]
   )
 
   const handleEdit = useCallback((event: IEvent) => {
@@ -285,17 +366,24 @@ export default function BigCalendar({
     <CalendarLabelsContext.Provider value={mergedLabels}>
       <CalendarFlagsContext.Provider value={flags}>
         <CalendarDateLocaleContext.Provider value={dateLocale}>
+         <CalendarCustomizationContext.Provider value={customization}>
           <CalendarContextMenu commands={menuCommands} onSelect={handleCommandSelect}>
-            <div className="overflow-hidden rounded-xl border" onContextMenuCapture={handleContextMenu}>
-              <CalendarHeader
-                view={view}
-                events={filteredEvents}
-                canAdd={canAdd}
-                availableViews={availableViews}
-                showUserSelect={showUserSelect}
-                onAddEvent={() => handleAddEvent()}
-                onViewChange={handleChangeView}
-              />
+            <div
+              className={cn('overflow-hidden rounded-xl border', classNames?.root)}
+              onContextMenuCapture={handleContextMenu}
+            >
+              {!hideHeader &&
+                (headerSlot ?? (
+                  <CalendarHeader
+                    view={view}
+                    events={filteredEvents}
+                    canAdd={canAdd}
+                    availableViews={availableViews}
+                    showUserSelect={showUserSelect}
+                    onAddEvent={() => handleAddEvent()}
+                    onViewChange={handleChangeView}
+                  />
+                ))}
 
               {view === 'month' && (
                 <CalendarMonthView
@@ -343,6 +431,7 @@ export default function BigCalendar({
               )}
             </div>
           </CalendarContextMenu>
+         </CalendarCustomizationContext.Provider>
 
           {/* Dialogs rendered outside the calendar border */}
           {selectedEvent && (

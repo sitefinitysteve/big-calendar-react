@@ -20,11 +20,20 @@ import DayViewMultiDayEventsRow from '@/calendar/components/day-view/DayViewMult
 
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { useCalendarCustomization } from '@/calendar/customization'
 import {
   formatDate as fmtDate,
   formatHour as fmtHour,
   formatTime as fmtTime,
 } from '@/calendar/date-format'
+
+/** Literal (Tailwind-scannable) classes for the four 15-minute slots at 96px/hour. */
+const STOCK_SLOT_CLASSES = [
+  'absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent',
+  'absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent',
+  'absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent',
+  'absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent',
+]
 
 interface CalendarDayViewProps {
   singleDayEvents: IEvent[]
@@ -43,6 +52,20 @@ export default function CalendarDayView({
 }: CalendarDayViewProps) {
   const labels = useCalendarLabels()
   const locale = useDateLocale()
+  const { hourHeight, height, autoHeight, classNames } = useCalendarCustomization()
+  // Stock 96px hour keeps its literal Tailwind classes so default output is
+  // byte-identical; a custom hourHeight switches to inline positioning.
+  const scaled = hourHeight !== 96
+  const quarter = hourHeight / 4
+  function slot(index: number) {
+    if (!scaled) {
+      return { className: STOCK_SLOT_CLASSES[index], style: undefined }
+    }
+    return {
+      className: 'absolute inset-x-0 cursor-pointer transition-colors hover:bg-accent',
+      style: { top: `${quarter * index}px`, height: `${quarter}px` },
+    }
+  }
 
   const selectedDate = useCalendarStore((s) => s.selectedDate)
   const users = useCalendarStore((s) => s.users)
@@ -134,12 +157,15 @@ export default function CalendarDayView({
           </div>
         </div>
 
-        <ScrollArea className="h-[800px]">
+        <ScrollArea
+          className={cn(height === undefined && !autoHeight && 'h-[800px]')}
+          style={autoHeight ? undefined : height !== undefined ? { height } : undefined}
+        >
           <div className="flex">
             {/* Hours column */}
             <div className="relative w-18">
               {hours.map((hour, index) => (
-                <div key={hour} className="relative" style={{ height: '96px' }}>
+                <div key={hour} className="relative" style={{ height: `${hourHeight}px` }}>
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
                     {index !== 0 && (
                       <span className="text-xs text-muted-foreground">{formatHour(hour)}</span>
@@ -159,8 +185,9 @@ export default function CalendarDayView({
                       'relative',
                       !isWorkingHour(selectedDate, hour, workingHours) &&
                         'bg-calendar-disabled-hour',
+                      classNames?.hourRow,
                     )}
-                    style={{ height: '96px' }}
+                    style={{ height: `${hourHeight}px` }}
                   >
                     {index !== 0 && (
                       <div className="pointer-events-none absolute inset-x-0 top-0 border-b" />
@@ -170,11 +197,11 @@ export default function CalendarDayView({
                     {canAdd !== false && (
                       <>
                         <div
-                          className="absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          {...slot(0)}
                           onClick={() => onAddEvent?.(selectedDate, { hour, minute: 0 })}
                         />
                         <div
-                          className="absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          {...slot(1)}
                           onClick={() => onAddEvent?.(selectedDate, { hour, minute: 15 })}
                         />
                       </>
@@ -185,11 +212,11 @@ export default function CalendarDayView({
                     {canAdd !== false && (
                       <>
                         <div
-                          className="absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          {...slot(2)}
                           onClick={() => onAddEvent?.(selectedDate, { hour, minute: 30 })}
                         />
                         <div
-                          className="absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                          {...slot(3)}
                           onClick={() => onAddEvent?.(selectedDate, { hour, minute: 45 })}
                         />
                       </>
@@ -208,6 +235,7 @@ export default function CalendarDayView({
                       >
                         <EventBlock
                           event={event}
+                          view="day"
                           onOpenDetails={(e) => onOpenDetails?.(e)}
                         />
                       </div>

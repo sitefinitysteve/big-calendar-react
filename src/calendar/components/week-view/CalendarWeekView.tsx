@@ -17,6 +17,15 @@ import WeekViewMultiDayEventsRow from '@/calendar/components/week-view/WeekViewM
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
 import { formatHour } from '@/calendar/date-format'
+import { useCalendarCustomization } from '@/calendar/customization'
+
+/** Literal (Tailwind-scannable) classes for the four 15-minute slots at 96px/hour. */
+const STOCK_SLOT_CLASSES = [
+  'absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent',
+  'absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent',
+  'absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent',
+  'absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent',
+]
 
 interface CalendarWeekViewProps {
   singleDayEvents: IEvent[]
@@ -35,6 +44,20 @@ export default function CalendarWeekView({
 }: CalendarWeekViewProps) {
   const labels = useCalendarLabels()
   const locale = useDateLocale()
+  const { hourHeight, height, autoHeight, classNames } = useCalendarCustomization()
+  // Stock 96px hour keeps its literal Tailwind classes so default output is
+  // byte-identical; a custom hourHeight switches to inline positioning.
+  const scaled = hourHeight !== 96
+  const quarter = hourHeight / 4
+  function slot(index: number) {
+    if (!scaled) {
+      return { className: STOCK_SLOT_CLASSES[index], style: undefined }
+    }
+    return {
+      className: 'absolute inset-x-0 cursor-pointer transition-colors hover:bg-accent',
+      style: { top: `${quarter * index}px`, height: `${quarter}px` },
+    }
+  }
 
   const visibleHours = useCalendarStore((s) => s.visibleHours)
   const workingHours = useCalendarStore((s) => s.workingHours)
@@ -137,12 +160,15 @@ export default function CalendarWeekView({
           </div>
         </div>
 
-        <ScrollArea className="h-[736px]">
+        <ScrollArea
+          className={cn(height === undefined && !autoHeight && 'h-[736px]')}
+          style={autoHeight ? undefined : height !== undefined ? { height } : undefined}
+        >
           <div className="flex overflow-hidden">
             {/* Hours column */}
             <div className="relative w-18">
               {hours.map((hour, index) => (
-                <div key={hour} className="relative" style={{ height: '96px' }}>
+                <div key={hour} className="relative" style={{ height: `${hourHeight}px` }}>
                   <div className="absolute -top-3 right-2 flex h-6 items-center">
                     {index !== 0 && (
                       <span className="text-xs text-muted-foreground">
@@ -169,9 +195,10 @@ export default function CalendarWeekView({
                           className={cn(
                             'relative',
                             !isWorkingHour(day, hour, workingHours) &&
-                              'bg-calendar-disabled-hour'
+                              'bg-calendar-disabled-hour',
+                            classNames?.hourRow
                           )}
-                          style={{ height: '96px' }}
+                          style={{ height: `${hourHeight}px` }}
                         >
                           {hourIndex !== 0 && (
                             <div className="pointer-events-none absolute inset-x-0 top-0 border-b" />
@@ -181,11 +208,11 @@ export default function CalendarWeekView({
                           {canAdd !== false && (
                             <>
                               <div
-                                className="absolute inset-x-0 top-0 h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                                {...slot(0)}
                                 onClick={() => handleTimeSlotClick(day, hour, 0)}
                               />
                               <div
-                                className="absolute inset-x-0 top-[24px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                                {...slot(1)}
                                 onClick={() => handleTimeSlotClick(day, hour, 15)}
                               />
                             </>
@@ -196,11 +223,11 @@ export default function CalendarWeekView({
                           {canAdd !== false && (
                             <>
                               <div
-                                className="absolute inset-x-0 top-[48px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                                {...slot(2)}
                                 onClick={() => handleTimeSlotClick(day, hour, 30)}
                               />
                               <div
-                                className="absolute inset-x-0 top-[72px] h-[24px] cursor-pointer transition-colors hover:bg-accent"
+                                {...slot(3)}
                                 onClick={() => handleTimeSlotClick(day, hour, 45)}
                               />
                             </>

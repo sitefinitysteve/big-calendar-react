@@ -15,6 +15,7 @@ import type { IEvent } from '@/calendar/interfaces'
 import type { TCalendarView } from '@/calendar/types'
 import type { ICalendarLabels } from '@/calendar/labels'
 import { useCalendarLabels, useCalendarFlags } from '@/calendar/labels'
+import { useCalendarCustomization } from '@/calendar/customization'
 
 interface CalendarHeaderProps {
   view: TCalendarView
@@ -52,6 +53,7 @@ export default function CalendarHeader({
 }: CalendarHeaderProps) {
   const labels = useCalendarLabels()
   const { showViewTooltips } = useCalendarFlags()
+  const { classNames } = useCalendarCustomization()
 
   const visibleViewButtons = useMemo(() => {
     const filtered = VIEW_BUTTONS.filter((btn) => availableViews.includes(btn.view))
@@ -68,7 +70,12 @@ export default function CalendarHeader({
   const labelFor = (key: TTooltipKey) => labels[key] as ICalendarLabels[TTooltipKey]
 
   return (
-    <div className="bc-header flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
+    <div
+      className={cn(
+        'bc-header flex flex-col gap-4 border-b p-4 lg:flex-row lg:items-center lg:justify-between',
+        classNames?.header
+      )}
+    >
       <div className="flex items-center gap-3">
         <TodayButton />
         <DateNavigator view={view} events={events} />
