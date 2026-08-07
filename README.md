@@ -290,6 +290,11 @@ past its slot.
 | `autoHeight` | `false` | Grid sizes to content instead of scrolling |
 | `maxEventsPerDayCell` | `3` | Month-view badge slots per day |
 | `onShowMore` | none | Turns "+N more" into a button firing `(yyyy-MM-dd)` |
+| `allDayMaxRows` | none (uncapped) | Week all-day strip: max badge rows before the strip scrolls internally |
+
+The week view's all-day strip sits directly under the day-name header row (which is sticky) and
+carries a gutter label taken from the `allDay` label key (`"All day"` by default), so a translated
+calendar labels it too.
 
 ### Class hooks
 

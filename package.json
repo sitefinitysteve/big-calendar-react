@@ -1,6 +1,6 @@
 {
   "name": "big-calendar-react",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "description": "A fully-featured calendar component for React with 5 views, event CRUD, user filtering, and dark mode. Built with shadcn/ui and Tailwind CSS.",
   "author": "Steve McNiven-Scott <steve@sitefinitysteve.com> (https://www.sitefinitysteve.com)",

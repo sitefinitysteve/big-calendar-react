@@ -98,6 +98,8 @@ export interface BigCalendarProps {
   autoHeight?: boolean
   /** Month-view event slots per day cell. Default 3. */
   maxEventsPerDayCell?: number
+  /** Week view: max badge rows in the all-day strip before it scrolls internally. Default: uncapped. */
+  allDayMaxRows?: number
   /** When provided, the month "+N more" label becomes a button firing this with `yyyy-MM-dd`. */
   onShowMore?: (date: string) => void
   /** Extra classes merged onto the library's structural elements. */
@@ -144,6 +146,7 @@ export default function BigCalendar({
   height,
   autoHeight,
   maxEventsPerDayCell = 3,
+  allDayMaxRows,
   onShowMore,
   classNames,
   dayCellClassName,
@@ -163,6 +166,7 @@ export default function BigCalendar({
       height,
       autoHeight,
       maxEventsPerDayCell,
+      allDayMaxRows,
       onShowMore,
       classNames,
       dayCellClassName,
@@ -176,6 +180,7 @@ export default function BigCalendar({
       height,
       autoHeight,
       maxEventsPerDayCell,
+      allDayMaxRows,
       onShowMore,
       classNames,
       dayCellClassName,

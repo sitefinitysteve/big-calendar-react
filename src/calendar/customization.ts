@@ -58,6 +58,8 @@ export interface ICalendarCustomization {
   height?: number | string
   autoHeight?: boolean
   maxEventsPerDayCell: number
+  /** Cap for the week all-day strip; beyond it the strip scrolls internally. */
+  allDayMaxRows?: number
   onShowMore?: (date: string) => void
   classNames?: ICalendarClassNames
   dayCellClassName?: (date: Date) => string | undefined

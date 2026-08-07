@@ -14,5 +14,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.{ts,tsx}'],
     setupFiles: ['./vitest.setup.ts'],
+    // UTC-negative on purpose: `new Date('yyyy-MM-dd')` bugs only show up here.
+    env: { TZ: 'America/Toronto' },
   },
 })

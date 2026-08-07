@@ -33,7 +33,7 @@ function AgendaDayGroup({ date, events, multiDayEvents, onOpenDetails }: AgendaD
 
   return (
     <div className="space-y-2">
-      <h3 className="sticky top-0 z-10 capitalize bg-background/95 py-2 text-sm font-semibold backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <h3 className="sticky top-0 z-10 first-letter:uppercase bg-background/95 py-2 text-sm font-semibold backdrop-blur supports-[backdrop-filter]:bg-background/60">
         {formatLongDate(date, dateLocale)}
       </h3>
 

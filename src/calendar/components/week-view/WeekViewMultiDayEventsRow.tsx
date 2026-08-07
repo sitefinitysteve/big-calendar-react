@@ -9,8 +9,17 @@ import {
   isBefore,
   isAfter,
 } from 'date-fns'
+import { cn } from '@/lib/utils'
 import MonthEventBadge from '@/calendar/components/month-view/MonthEventBadge'
 import type { IEvent } from '@/calendar/interfaces'
+import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarCustomization } from '@/calendar/customization'
+
+/** One badge row: `h-6.5` (26px) plus the `gap-1` (4px) that follows it. */
+const ALL_DAY_ROW_HEIGHT = 26
+const ALL_DAY_ROW_GAP = 4
+/** The strip's own `py-1`. */
+const ALL_DAY_ROW_PADDING = 8
 
 interface WeekViewMultiDayEventsRowProps {
   selectedDate: Date
@@ -30,6 +39,8 @@ export default function WeekViewMultiDayEventsRow({
   multiDayEvents,
   onOpenDetails,
 }: WeekViewMultiDayEventsRowProps) {
+  const labels = useCalendarLabels()
+  const { allDayMaxRows } = useCalendarCustomization()
   const weekStart = useMemo(() => startOfWeek(selectedDate), [selectedDate])
   const weekEnd = useMemo(() => endOfWeek(selectedDate), [selectedDate])
   const weekDays = useMemo(
@@ -104,12 +115,29 @@ export default function WeekViewMultiDayEventsRow({
     return 'middle'
   }
 
+  // When capped, the strip scrolls internally instead of pushing the grid down.
+  const capped = allDayMaxRows !== undefined && eventRows.length > allDayMaxRows
+  const maxHeight = capped
+    ? allDayMaxRows! * ALL_DAY_ROW_HEIGHT +
+      (allDayMaxRows! - 1) * ALL_DAY_ROW_GAP +
+      ALL_DAY_ROW_PADDING
+    : undefined
+
   if (!hasEventsInWeek) return null
 
   return (
-    <div className="hidden overflow-hidden sm:flex">
-      <div className="w-18 border-b" />
-      <div className="grid flex-1 grid-cols-7 divide-x border-b border-l">
+    <div className="hidden sm:flex">
+      <div className="flex w-18 shrink-0 items-start justify-end border-b py-1 pr-2 text-xs text-muted-foreground">
+        {labels.allDay}
+      </div>
+      <div
+        data-all-day-strip=""
+        className={cn(
+          'grid flex-1 grid-cols-7 divide-x border-b border-l',
+          capped && 'overflow-y-auto'
+        )}
+        style={maxHeight === undefined ? undefined : { maxHeight: `${maxHeight}px` }}
+      >
         {weekDays.map((day, dayIndex) => (
           <div key={day.toISOString()} className="flex h-full flex-col gap-1 py-1">
             {eventRows.map((row, rowIndex) => {

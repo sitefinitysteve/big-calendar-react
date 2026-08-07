@@ -5,6 +5,7 @@ import {
   parseISO,
   isSameDay,
   areIntervalsOverlapping,
+  isSameWeek,
 } from 'date-fns'
 import { useCalendarStore } from '@/stores/calendar'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -70,6 +71,7 @@ export default function CalendarWeekView({
 
   const weekStart = startOfWeek(selectedDate)
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+  const showsToday = isSameWeek(selectedDate, new Date())
 
   function getDayEvents(day: Date): IEvent[] {
     return singleDayEvents.filter(
@@ -135,14 +137,8 @@ export default function CalendarWeekView({
       {/* Desktop week view */}
       <div className="hidden flex-col sm:flex">
         <div>
-          <WeekViewMultiDayEventsRow
-            selectedDate={selectedDate}
-            multiDayEvents={multiDayEvents}
-            onOpenDetails={onOpenDetails}
-          />
-
-          {/* Week header */}
-          <div className="relative z-20 flex border-b">
+          {/* Week header. Sticky so the all-day strip below can scroll under it. */}
+          <div className="sticky top-0 z-20 flex border-b bg-background">
             <div className="w-18" />
             <div className="grid flex-1 grid-cols-7 divide-x border-l">
               {weekDays.map((day, index) => (
@@ -158,6 +154,12 @@ export default function CalendarWeekView({
               ))}
             </div>
           </div>
+
+          <WeekViewMultiDayEventsRow
+            selectedDate={selectedDate}
+            multiDayEvents={multiDayEvents}
+            onOpenDetails={onOpenDetails}
+          />
         </div>
 
         <ScrollArea
@@ -258,10 +260,13 @@ export default function CalendarWeekView({
                 })}
               </div>
 
-              <CalendarTimeline
-                firstVisibleHour={earliestEventHour}
-                lastVisibleHour={latestEventHour}
-              />
+              {/* The "now" line is only meaningful on a week that contains today. */}
+              {showsToday && (
+                <CalendarTimeline
+                  firstVisibleHour={earliestEventHour}
+                  lastVisibleHour={latestEventHour}
+                />
+              )}
             </div>
           </div>
         </ScrollArea>

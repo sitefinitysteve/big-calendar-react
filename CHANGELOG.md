@@ -1,5 +1,32 @@
 # Changelog
 
+## 1.2.1
+
+Bug fixes plus one additive prop. Existing markup is unchanged except where the previous
+output was wrong (agenda heading date, stale timeline, all-day strip order/casing).
+
+### Fixed
+
+- **Agenda day headings** were built with `new Date('yyyy-MM-dd')`, which parses as UTC and
+  rendered the previous day in every timezone west of Greenwich. Now uses `parseISO`. This also
+  fixes agenda groups appearing to spill into the neighbouring month.
+- **Current-time line** no longer renders on a week that does not contain today, or on a day
+  view showing anything other than today.
+- **Month view below `lg`** rendered event bullets with no click handler, leaving events
+  unreachable on small screens. Bullets now carry the same `role="button"` / `data-event-id`
+  wiring as badges and fire the details handler on click or Enter/Space. They additionally
+  carry `data-event-bullet` so `[data-event-id]` queries can exclude them.
+- **Agenda day headings** use `first-letter:uppercase` instead of `capitalize`, which was
+  uppercasing every word of a long date.
+- **Week all-day strip** now renders BELOW the day-name header row (previously above it), and
+  the header row is sticky.
+
+### Added
+
+- **`allDayMaxRows`** — caps the week all-day strip at N badge rows; beyond that the strip
+  scrolls internally instead of pushing the grid down. Unset keeps the uncapped behaviour.
+- The all-day strip gains a leading gutter label driven by the existing `allDay` label key.
+
 ## 1.2.0
 
 Additive customization API. Every new prop is optional; with none of them set the

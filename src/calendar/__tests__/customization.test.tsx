@@ -184,7 +184,7 @@ describe('month day cell', () => {
     const { container } = render(<BigCalendar view="month" />)
 
     const cell = container.querySelector('[data-date="2025-01-15"]')!
-    expect(cell.querySelectorAll('[data-event-id]')).toHaveLength(3)
+    expect(cell.querySelectorAll('[data-event-id]:not([data-event-bullet])')).toHaveLength(3)
     expect(cell.querySelector('button[type="button"]')).toBeNull()
     expect(cell.textContent).toContain('2')
   })
@@ -194,7 +194,7 @@ describe('month day cell', () => {
     const { container } = render(<BigCalendar view="month" maxEventsPerDayCell={5} />)
 
     const cell = container.querySelector('[data-date="2025-01-15"]')!
-    expect(cell.querySelectorAll('[data-event-id]')).toHaveLength(5)
+    expect(cell.querySelectorAll('[data-event-id]:not([data-event-bullet])')).toHaveLength(5)
   })
 
   it('makes "+N more" a button when onShowMore is provided', () => {
@@ -295,7 +295,7 @@ describe('classNames', () => {
     week.unmount()
 
     const month = render(<BigCalendar view="month" classNames={{ eventBlock: 'chip' }} />)
-    expect(month.container.querySelector('[data-event-id="1"]')!.className).toContain('chip')
+    expect(month.container.querySelector('[data-event-id="1"]:not([data-event-bullet])')!.className).toContain('chip')
     month.unmount()
 
     const agenda = render(<BigCalendar view="agenda" classNames={{ eventBlock: 'chip' }} />)
@@ -357,7 +357,7 @@ describe('custom colors across every leaf', () => {
 
   it('month badge gets the class and the variable', () => {
     const { container } = render(<BigCalendar view="month" />)
-    const badge = container.querySelector('[data-event-id="1"]') as HTMLElement
+    const badge = container.querySelector('[data-event-id="1"]:not([data-event-bullet])') as HTMLElement
 
     expect(badge.className).toContain('bc-event-custom-color')
     expect(badge.style.getPropertyValue('--bc-event-color')).toBe('rebeccapurple')

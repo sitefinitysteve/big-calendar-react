@@ -103,7 +103,24 @@ function DayCell({
             <div key={position} className="lg:flex-1">
               {event && (
                 <>
-                  <EventBullet className="lg:hidden" color={event.color} />
+                  {/* Below `lg` the bullet is the ONLY chip rendered, so it carries
+                      the same button wiring the badge has or the event is unreachable. */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    data-event-id={event.id}
+                    data-event-bullet=""
+                    className="lg:hidden"
+                    onClick={() => onOpenDetails?.(event)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        onOpenDetails?.(event)
+                      }
+                    }}
+                  >
+                    <EventBullet color={event.color} />
+                  </div>
                   <MonthEventBadge
                     className="hidden lg:flex"
                     event={event}

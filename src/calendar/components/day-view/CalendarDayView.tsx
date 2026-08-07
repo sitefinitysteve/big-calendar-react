@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { format, parseISO, areIntervalsOverlapping } from 'date-fns'
+import { format, parseISO, areIntervalsOverlapping, isToday } from 'date-fns'
 import { Calendar as CalendarIcon, Clock, User } from 'lucide-react'
 
 import { useCalendarStore } from '@/stores/calendar'
@@ -244,10 +244,13 @@ export default function CalendarDayView({
                 ))}
               </div>
 
-              <CalendarTimeline
-                firstVisibleHour={earliestEventHour}
-                lastVisibleHour={latestEventHour}
-              />
+              {/* The "now" line is only meaningful when the shown day IS today. */}
+              {isToday(selectedDate) && (
+                <CalendarTimeline
+                  firstVisibleHour={earliestEventHour}
+                  lastVisibleHour={latestEventHour}
+                />
+              )}
             </div>
           </div>
         </ScrollArea>
