@@ -1,5 +1,34 @@
 # Changelog
 
+## 1.3.0
+
+Two packaging correctness fixes. No component, prop, or markup changes: if your app already
+installed the form peers and is on zod 3, this release is a no-op for you.
+
+### Fixed
+
+- **`react-hook-form`, `@hookform/resolvers` and `zod` are no longer marked optional.**
+  They were declared in `peerDependenciesMeta` as `optional: true`, but `BigCalendar` imports
+  `AddEventDialog` / `EditEventDialog` at the top of `CalendarContainer`, which pull in
+  `react-hook-form` and `zod` through the form and schema modules. Those imports are static,
+  so a bundler resolves them whether or not the dialogs render: setting `canAdd` / `canEdit`
+  to `false` skips the render, not the import. Consumers who took the peers at their word and
+  omitted them hit a hard build failure (`MISSING_EXPORT` against Vite's optional-peer stub)
+  rather than a graceful degrade. All three are now plain required peers.
+- **Validation messages are no longer dropped on zod 4.** `createEventSchema` passed
+  `required_error`, which zod 4 silently ignores, so every custom or localized message
+  (`validationStartDateRequired` and friends) was replaced by zod's built-in English text such
+  as "Invalid input: expected date, received undefined". The schema now uses `message`, which
+  zod 3 and zod 4 both honour, so the declared `zod: ^3.0.0 || ^4.0.0` peer range is finally
+  accurate. `ICalendarLabels` is unchanged.
+
+### Upgrading
+
+If you already install `react-hook-form`, `@hookform/resolvers` and `zod`, no action is needed.
+If you did not, your package manager now resolves them as required peers; npm 7+ installs them
+automatically. On zod 4 you will start seeing your own validation copy where zod's default
+English appeared before.
+
 ## 1.2.1
 
 Bug fixes plus one additive prop. Existing markup is unchanged except where the previous

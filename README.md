@@ -17,11 +17,17 @@ Install the peer dependencies your app doesn't already have:
 ```bash
 npm install react@^19 react-dom@^19 date-fns zustand \
   @base-ui/react \
-  react-day-picker class-variance-authority clsx tailwind-merge lucide-react
-
-# Only needed if you use the built-in Add/Edit dialogs:
-npm install react-hook-form @hookform/resolvers zod
+  react-day-picker class-variance-authority clsx tailwind-merge lucide-react \
+  react-hook-form @hookform/resolvers zod
 ```
+
+All of the above are required. `react-hook-form`, `@hookform/resolvers` and `zod` were
+marked optional before 1.3.0, but `BigCalendar` imports the Add/Edit dialogs
+unconditionally, so leaving them out broke the build even when the dialogs were disabled
+via `canAdd` / `canEdit`. Setting those props to `false` still skips rendering the dialogs;
+it just cannot remove the import.
+
+Using zod 4? Nothing extra to do. The peer range accepts `^3` and `^4`.
 
 ## Quick start
 
