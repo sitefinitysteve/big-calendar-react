@@ -37,6 +37,15 @@ export interface IEventRenderContext {
 
 export type TEventRenderer = (event: IEvent, ctx: IEventRenderContext) => ReactNode
 
+/** Which clock label is being formatted: the day/week hour axis, the now-marker, or an event time. */
+export type TTimeFormatKind = 'axis' | 'now' | 'event'
+
+/**
+ * Host override for every clock label. `axis` receives the top of each hour and
+ * should return an hour-only label; `now` and `event` return a full time.
+ */
+export type TTimeFormatter = (date: Date, kind: TTimeFormatKind) => string
+
 /** Extra class names merged onto the library's own structural elements. */
 export interface ICalendarClassNames {
   root?: string
@@ -63,6 +72,8 @@ export interface ICalendarCustomization {
   onShowMore?: (date: string) => void
   classNames?: ICalendarClassNames
   dayCellClassName?: (date: Date) => string | undefined
+  /** Replaces the built-in Intl clock for the hour axis, now-marker and event times. */
+  formatTime?: TTimeFormatter
 }
 
 /** Defaults reproduce v1.1.0 behavior exactly for standalone-exported views. */

@@ -6,8 +6,8 @@ import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
 import type { TLegacyEventColor } from '@/calendar/types'
-import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
-import { formatTime } from '@/calendar/date-format'
+import { useCalendarLabels } from '@/calendar/labels'
+import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 import { isLegacyColor, useCalendarCustomization } from '@/calendar/customization'
 
 const agendaCardVariants = cva(
@@ -46,7 +46,7 @@ interface AgendaEventCardProps {
 
 function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, onOpenDetails }: AgendaEventCardProps) {
   const labels = useCalendarLabels()
-  const dateLocale = useDateLocale()
+  const formatTime = useTimeFormatter()
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
   const { renderEvent, renderAgendaEvent, selectedEventId, classNames } = useCalendarCustomization()
   const renderer = renderAgendaEvent ?? renderEvent
@@ -97,7 +97,7 @@ function AgendaEventCard({ event, eventCurrentDay, eventTotalDays, onOpenDetails
                 labels.allDay
               ) : (
                 <>
-                  {formatTime(parseISO(event.startDate), dateLocale)} - {formatTime(parseISO(event.endDate), dateLocale)}
+                  {formatTime(parseISO(event.startDate), 'event')} - {formatTime(parseISO(event.endDate), 'event')}
                 </>
               )}
             </span>

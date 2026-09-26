@@ -5,8 +5,7 @@ import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
 import type { TLegacyEventColor } from '@/calendar/types'
-import { useDateLocale } from '@/calendar/labels'
-import { formatTime } from '@/calendar/date-format'
+import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 import { isLegacyColor, useCalendarCustomization } from '@/calendar/customization'
 import type { TEventRenderView } from '@/calendar/customization'
 
@@ -47,7 +46,7 @@ const calendarWeekEventCardVariants = cva(
 
 function EventBlock({ event, className, view = 'week', onOpenDetails }: EventBlockProps) {
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
-  const dateLocale = useDateLocale()
+  const formatTime = useTimeFormatter()
   const { renderEvent, selectedEventId, hourHeight, classNames } = useCalendarCustomization()
 
   const start = useMemo(() => parseISO(event.startDate), [event.startDate])
@@ -114,7 +113,7 @@ function EventBlock({ event, className, view = 'week', onOpenDetails }: EventBlo
 
       {durationInMinutes > 25 && !event.isAllDay && (
         <p>
-          {formatTime(start, dateLocale)} - {formatTime(end, dateLocale)}
+          {formatTime(start, 'event')} - {formatTime(end, 'event')}
         </p>
       )}
     </>

@@ -16,6 +16,7 @@ import type {
   ICalendarClassNames,
   ICalendarCustomization,
   TEventRenderer,
+  TTimeFormatter,
 } from '@/calendar/customization'
 import { CalendarCustomizationContext } from '@/calendar/customization'
 import { cn } from '@/lib/utils'
@@ -106,6 +107,13 @@ export interface BigCalendarProps {
   classNames?: ICalendarClassNames
   /** Per-day extra classes for month-view cells. */
   dayCellClassName?: (date: Date) => string | undefined
+  /**
+   * Format every clock label yourself: `kind` is `'axis'` (hour-only label on the
+   * week/day time axis), `'now'` (the current-time marker) or `'event'` (event
+   * start/end times, including the details dialog). Omit it for the built-in
+   * Intl clock that follows `dateLocale`.
+   */
+  formatTime?: TTimeFormatter
 }
 
 type MenuTarget = { type: 'event'; event: IEvent } | { type: 'day'; date: string }
@@ -150,6 +158,7 @@ export default function BigCalendar({
   onShowMore,
   classNames,
   dayCellClassName,
+  formatTime,
 }: BigCalendarProps) {
   const deleteEvent = useCalendarStore((s) => s.deleteEvent)
 
@@ -170,6 +179,7 @@ export default function BigCalendar({
       onShowMore,
       classNames,
       dayCellClassName,
+      formatTime,
     }),
     [
       renderEvent,
@@ -184,6 +194,7 @@ export default function BigCalendar({
       onShowMore,
       classNames,
       dayCellClassName,
+      formatTime,
     ]
   )
 
@@ -439,9 +450,9 @@ export default function BigCalendar({
               )}
             </div>
           </CalendarContextMenu>
-         </CalendarCustomizationContext.Provider>
 
-          {/* Dialogs rendered outside the calendar border */}
+          {/* Dialogs rendered outside the calendar border (inside the customization
+              provider so the details dialog uses the host's `formatTime`). */}
           {selectedEvent && (
             <EventDetailsDialog
               event={selectedEvent}
@@ -473,6 +484,7 @@ export default function BigCalendar({
               onEventCreated={(event) => onEventCreated?.(event)}
             />
           )}
+         </CalendarCustomizationContext.Provider>
         </CalendarDateLocaleContext.Provider>
       </CalendarFlagsContext.Provider>
     </CalendarLabelsContext.Provider>

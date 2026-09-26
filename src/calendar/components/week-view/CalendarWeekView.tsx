@@ -17,7 +17,7 @@ import CalendarTimeline from '@/calendar/components/week-view/CalendarTimeline'
 import WeekViewMultiDayEventsRow from '@/calendar/components/week-view/WeekViewMultiDayEventsRow'
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
-import { formatHour } from '@/calendar/date-format'
+import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 import { useCalendarCustomization } from '@/calendar/customization'
 
 /** Literal (Tailwind-scannable) classes for the four 15-minute slots at 96px/hour. */
@@ -45,6 +45,7 @@ export default function CalendarWeekView({
 }: CalendarWeekViewProps) {
   const labels = useCalendarLabels()
   const locale = useDateLocale()
+  const formatTime = useTimeFormatter()
   const { hourHeight, height, autoHeight, classNames } = useCalendarCustomization()
   // Stock 96px hour keeps its literal Tailwind classes so default output is
   // byte-identical; a custom hourHeight switches to inline positioning.
@@ -119,7 +120,7 @@ export default function CalendarWeekView({
   }
 
   function formatHourLabel(hour: number): string {
-    return formatHour(new Date(new Date().setHours(hour, 0, 0, 0)), locale)
+    return formatTime(new Date(new Date().setHours(hour, 0, 0, 0)), 'axis')
   }
 
   function handleTimeSlotClick(day: Date, hour: number, minute: number) {

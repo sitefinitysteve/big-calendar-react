@@ -25,9 +25,10 @@ import type { Locale } from 'date-fns'
  * | fr-CA  | `d MMM y`   | `HH:mm`    |
  * | ja     | `y/MM/dd`   | `H:mm`     |
  *
- * The `FALLBACK_*` constants below are the previously-hardcoded patterns, kept
- * verbatim so that a caller passing no locale — or a hand-rolled `Locale` with
- * no `formatLong` — renders exactly what this component rendered before.
+ * Clock times (event times, the now-marker, the hour axis) are the exception:
+ * they format through `Intl.DateTimeFormat` with the locale's `code` and hour
+ * cycle, see `clockFormatter()` below. The `FALLBACK_*` constants cover a caller
+ * passing no locale, or a hand-rolled `Locale` with no `formatLong` / `code`.
  */
 
 /** Previously hardcoded at every date call site. */
@@ -39,8 +40,11 @@ const FALLBACK_LONG_DATE = 'EEEE, MMMM d, yyyy'
 /** Previously hardcoded at every time call site. */
 const FALLBACK_TIME = 'h:mm a'
 
-/** Previously hardcoded on the day/week hour axis. */
-const FALLBACK_HOUR = 'hh a'
+/** Hour-only axis pattern for a 12-hour clock: no leading zero (`8 AM`). */
+const FALLBACK_HOUR = 'h a'
+
+/** Intl tag used when no locale is passed: date-fns' own default. */
+const DEFAULT_TAG = 'en-US'
 
 /** date-fns `format()` options, or `undefined` when there is no locale. */
 function opts(locale?: Locale) {
@@ -67,19 +71,11 @@ export function longDatePattern(locale?: Locale): string {
   return locale?.formatLong?.date({ width: 'full' }) ?? FALLBACK_LONG_DATE
 }
 
-/** Short time: `h:mm a` (en-US), `HH:mm` (fr-CA). */
+/** Short time pattern: `h:mm a` (en-US), `HH:mm` (fr-CA). Fallback for `formatTime()`. */
 export function timePattern(locale?: Locale): string {
   return locale?.formatLong?.time({ width: 'short' }) ?? FALLBACK_TIME
 }
 
-/**
- * Hour only, for the day/week view's time axis.
- *
- * There is no CLDR "hour" pattern, so this is derived from the locale's own
- * time pattern: a 24-hour locale labels the axis `14`, a 12-hour one `02 PM`.
- * Deriving it rather than hardcoding is what keeps the axis consistent with the
- * event times printed beside it.
- */
 /**
  * Whether the locale tells time on a 24-hour clock.
  *
@@ -93,6 +89,11 @@ export function is24HourLocale(locale?: Locale): boolean {
   return time ? /[Hk]/.test(withoutLiterals(time)) : false
 }
 
+/**
+ * Hour-only date-fns pattern, the fallback axis for a locale with no usable
+ * `code` (`formatHour()` prefers Intl). Derived from the locale's own time
+ * pattern: a 24-hour locale labels the axis `14`, a 12-hour one `2 PM`.
+ */
 export function hourPattern(locale?: Locale): string {
   const time = locale?.formatLong?.time({ width: 'short' })
 
@@ -117,10 +118,10 @@ export function hourPattern(locale?: Locale): string {
   }
 
   if (meridiem === -1) {
-    return 'hh'
+    return 'h'
   }
 
-  return meridiem < hour ? 'a hh' : 'hh a'
+  return meridiem < hour ? 'a h' : 'h a'
 }
 
 /**
@@ -139,6 +140,62 @@ export function dateTimePattern(locale?: Locale): string {
     .replace('{{time}}', timePattern(locale))
 }
 
+/**
+ * Clock times go through `Intl.DateTimeFormat`, keyed by the date-fns locale's
+ * `code` and its hour cycle. A 12-hour clock never pads the hour (`8:05 AM`,
+ * axis `8 AM`); a 24-hour clock keeps the locale's own CLDR shape (`08:05`
+ * en-GB, `08 h 05` fr-CA, `8:05` ja).
+ */
+type TClockShape = 'hour' | 'time'
+
+const clockFormatters = new Map<string, Intl.DateTimeFormat | null>()
+
+/** `h12`/`h23` from the date-fns locale, so labels agree with the time inputs. */
+function hourCycleFor(locale: Locale | undefined, tag: string): 'h12' | 'h23' {
+  if (!locale || locale.formatLong) {
+    return is24HourLocale(locale) ? 'h23' : 'h12'
+  }
+
+  return new Intl.DateTimeFormat(tag, { hour: 'numeric' }).resolvedOptions().hour12 ? 'h12' : 'h23'
+}
+
+/** A cached Intl formatter, or `null` when the locale has no usable BCP 47 code. */
+function clockFormatter(shape: TClockShape, locale?: Locale): Intl.DateTimeFormat | null {
+  const tag = locale ? locale.code : DEFAULT_TAG
+
+  if (!tag) {
+    return null
+  }
+
+  // `formatLong` presence decides the cycle source, so it is part of the key.
+  const key = `${tag}|${shape}|${locale?.formatLong ? 'fl' : '-'}`
+
+  if (clockFormatters.has(key)) {
+    return clockFormatters.get(key) ?? null
+  }
+
+  let formatter: Intl.DateTimeFormat | null
+
+  try {
+    const hourCycle = hourCycleFor(locale, tag)
+    const options: Intl.DateTimeFormatOptions =
+      hourCycle === 'h12'
+        ? { hour: 'numeric', ...(shape === 'time' && { minute: '2-digit' }), hourCycle }
+        : shape === 'time'
+          ? { timeStyle: 'short', hourCycle }
+          : { hour: 'numeric', hourCycle }
+
+    formatter = new Intl.DateTimeFormat(tag, options)
+  } catch {
+    // An invalid tag (a hand-rolled Locale) keeps the date-fns pattern path.
+    formatter = null
+  }
+
+  clockFormatters.set(key, formatter)
+
+  return formatter
+}
+
 /** `Dec 1, 2026` (en-US), `1 déc. 2026` (fr-CA). */
 export function formatDate(date: Date, locale?: Locale): string {
   return format(date, datePattern(locale), opts(locale))
@@ -149,17 +206,36 @@ export function formatLongDate(date: Date, locale?: Locale): string {
   return format(date, longDatePattern(locale), opts(locale))
 }
 
-/** `2:30 PM` (en-US), `14:30` (fr-CA). */
+/** `2:30 PM` (en-US), `14 h 30` (fr-CA), `14:30` (en-GB). */
 export function formatTime(date: Date, locale?: Locale): string {
-  return format(date, timePattern(locale), opts(locale))
+  const formatter = clockFormatter('time', locale)
+
+  return formatter ? formatter.format(date) : format(date, timePattern(locale), opts(locale))
 }
 
-/** `02 PM` (en-US), `14` (fr-CA). */
+/** Hour axis label: `2 PM` (en-US), `14 h` (fr-CA), `14` (en-GB). */
 export function formatHour(date: Date, locale?: Locale): string {
-  return format(date, hourPattern(locale), opts(locale))
+  const formatter = clockFormatter('hour', locale)
+
+  return formatter ? formatter.format(date) : format(date, hourPattern(locale), opts(locale))
 }
 
-/** `Dec 1, 2026, 2:30 PM` (en-US), `1 déc. 2026, 14:30` (fr-CA). */
-export function formatDateTime(date: Date, locale?: Locale): string {
-  return format(date, dateTimePattern(locale), opts(locale))
+/**
+ * `Dec 1, 2026, 2:30 PM` (en-US), `1 déc. 2026, 14 h 30` (fr-CA). The date half
+ * and the joiner come from the locale's patterns; `time` defaults to
+ * `formatTime()` and lets a host formatter supply the clock.
+ */
+export function formatDateTime(date: Date, locale?: Locale, time?: string): string {
+  const clock = time ?? formatTime(date, locale)
+  const joiner = locale?.formatLong?.dateTime({ width: 'short' })
+
+  if (!joiner) {
+    return `${format(date, FALLBACK_DATE, opts(locale))} ${clock}`
+  }
+
+  const [before = '', after = ''] = joiner.split('{{time}}')
+  const side = (pattern: string) =>
+    pattern ? format(date, pattern.replace('{{date}}', datePattern(locale)), opts(locale)) : ''
+
+  return `${side(before)}${clock}${side(after)}`
 }

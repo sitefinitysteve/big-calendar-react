@@ -5,8 +5,8 @@ import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import type { IEvent } from '@/calendar/interfaces'
 import type { TLegacyEventColor } from '@/calendar/types'
-import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
-import { formatTime } from '@/calendar/date-format'
+import { useCalendarLabels } from '@/calendar/labels'
+import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 import { isLegacyColor, useCalendarCustomization, type TEventRenderView } from '@/calendar/customization'
 
 interface MonthEventBadgeProps {
@@ -65,7 +65,7 @@ function MonthEventBadge({
   view = 'month',
 }: MonthEventBadgeProps) {
   const labels = useCalendarLabels()
-  const dateLocale = useDateLocale()
+  const formatTime = useTimeFormatter()
   const badgeVariant = useCalendarStore((s) => s.badgeVariant)
   const { renderEvent, renderMonthEvent, selectedEventId, classNames } = useCalendarCustomization()
   const renderer = renderMonthEvent ?? renderEvent
@@ -130,7 +130,7 @@ function MonthEventBadge({
       </div>
 
       {['first', 'none'].includes(currentPosition) && !event.isAllDay && (
-        <span>{formatTime(new Date(event.startDate), dateLocale)}</span>
+        <span>{formatTime(new Date(event.startDate), 'event')}</span>
       )}
     </>
   )

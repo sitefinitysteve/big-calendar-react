@@ -132,6 +132,7 @@ The built-in Add/Edit dialogs update the local Zustand store immediately (optimi
 | `labels` | `Partial<ICalendarLabels>` | `{}` | Override any user-facing string (see i18n). |
 | `showViewTooltips` | `boolean` | `true` | Toggle view-button tooltips. |
 | `dateLocale` | `date-fns` `Locale` | `en-US` patterns | Localizes every rendered date and time — month/day names **and** field order and clock convention. See [Date & time formatting](#date--time-formatting). |
+| `formatTime` | `(date, kind) => string` | Intl clock from `dateLocale` | Formats every clock label yourself; `kind` is `'axis'`, `'now'` or `'event'`. See [Custom clock](#custom-clock-formattime). |
 | `navigateOnDayClick` | `boolean` | `true` | If `false`, a day click only fires `onDayClick` instead of switching to day view. |
 | `openDetailsOnEventClick` | `boolean` | `true` | If `false`, an event click only fires `onEventClick` without opening the details dialog. |
 | `eventCommands` | `ICalendarCommand[]` | `[]` | Custom right-click menu items for event chips. |
@@ -199,12 +200,38 @@ is CLDR data), so passing a locale changes field order and clock convention, not
 | --- | --- | --- | --- | --- |
 | Header range, details dialog, day-view "today" chip | `Dec 1, 2026` | `Dec 1, 2026` | `1 déc. 2026` | `2026/12/01` |
 | Agenda day heading | `Tuesday, December 1, 2026` | `Tuesday, December 1st, 2026` | `mardi 1 décembre 2026` | `2026年12月1日火曜日` |
-| Event times (week/month/agenda/day) | `2:30 PM` | `2:30 PM` | `14:30` | `14:30` |
-| Day & week hour axis | `02 PM` | `02 PM` | `14` | `14` |
-| Date + time rows in the details dialog | `Dec 1, 2026 2:30 PM` | `Dec 1, 2026, 2:30 PM` | `1 déc. 2026, 14:30` | `2026/12/01 14:30` |
+| Event times (week/month/agenda/day) | `2:30 PM` | `2:30 PM` | `14 h 30` | `14:30` |
+| Day & week hour axis | `2 PM` | `2 PM` | `14 h` | `14時` |
+| Date + time rows in the details dialog | `Dec 1, 2026 2:30 PM` | `Dec 1, 2026, 2:30 PM` | `1 déc. 2026, 14 h 30` | `2026/12/01 14:30` |
 
-The hour axis follows the locale's own clock: a 24-hour locale labels it `14`, a 12-hour locale
-`02 PM`, so the axis always agrees with the event times printed beside it.
+Clock text (event times, the current-time marker, the hour axis) is formatted with
+`Intl.DateTimeFormat` using the locale's `code` and its hour cycle: a 24-hour locale keeps its
+CLDR shape (`14`, `14 h`), a 12-hour one never pads the hour (`2 PM`, `8:05 AM`). The axis
+therefore always agrees with the event times printed beside it and with the time inputs.
+
+### Custom clock (`formatTime`)
+
+Pass `formatTime` to apply your own house style to every clock label. `kind` tells you which one
+you are formatting:
+
+```tsx
+import type { TTimeFormatter } from 'big-calendar-react'
+
+const formatTime: TTimeFormatter = (date, kind) =>
+  kind === 'axis'
+    ? new Intl.DateTimeFormat('en-GB', { hour: '2-digit' }).format(date)
+    : new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(date)
+
+<BigCalendar view={view} onViewChange={setView} formatTime={formatTime} />
+```
+
+| `kind` | Where |
+| --- | --- |
+| `'axis'` | Hour labels on the week and day time axis (receives the top of each hour) |
+| `'now'` | The current-time marker |
+| `'event'` | Event start/end times in every view and the date + time rows of the details dialog |
+
+Custom event renderers can reach the same formatter through `useTimeFormatter()`.
 
 The Add/Edit dialogs follow the same locale — the date field's trigger label and popover are
 localized, and the time fields drop the AM/PM control for a 24-hour locale.

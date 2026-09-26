@@ -12,6 +12,7 @@ import {
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
 import { formatDate, formatDateTime } from '@/calendar/date-format'
+import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 
 interface EventDetailsDialogProps {
   event: IEvent
@@ -34,6 +35,7 @@ export default function EventDetailsDialog({
 }: EventDetailsDialogProps) {
   const labels = useCalendarLabels()
   const dateLocale = useDateLocale()
+  const formatTime = useTimeFormatter()
 
   const startDate = parseISO(event.startDate)
   const endDate = parseISO(event.endDate)
@@ -94,7 +96,7 @@ export default function EventDetailsDialog({
                 <div>
                   <p className="text-sm font-medium">{labels.fieldStartDate}</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatDateTime(startDate, dateLocale)}
+                    {formatDateTime(startDate, dateLocale, formatTime(startDate, 'event'))}
                   </p>
                 </div>
               </div>
@@ -104,7 +106,7 @@ export default function EventDetailsDialog({
                 <div>
                   <p className="text-sm font-medium">{labels.fieldEndDate}</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatDateTime(endDate, dateLocale)}
+                    {formatDateTime(endDate, dateLocale, formatTime(endDate, 'event'))}
                   </p>
                 </div>
               </div>

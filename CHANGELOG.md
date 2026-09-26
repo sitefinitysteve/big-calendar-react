@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.3.2
+
+Clock labels now follow the locale's own clock, and hosts can format them. One additive prop, no
+removals.
+
+### Fixed
+
+- **The hour axis no longer pads a 12-hour clock.** The week and day time axis rendered `08 AM`;
+  it now renders `8 AM`. A 24-hour locale keeps its own CLDR shape (`08` for en-GB, `14 h` for
+  fr-CA, `14時` for ja).
+- **Event times, the current-time marker and the details dialog use `Intl.DateTimeFormat`.** They
+  used to take the date-fns `formatLong` time pattern, which does not always match the CLDR clock
+  (fr-CA printed `14:30` where the locale writes `14 h 30`). Times are now formatted with the
+  `dateLocale`'s `code` and its hour cycle, so they agree with the 12/24-hour time inputs in the
+  Add/Edit dialogs. A 12-hour clock never shows a leading zero (`8:05 AM`).
+
+### Added
+
+- **`formatTime?: (date: Date, kind: 'axis' | 'now' | 'event') => string`** on `BigCalendar`
+  (and on `ICalendarCustomization`). When given, every clock label goes through it: `'axis'` is
+  the hour-only label on the week/day time axis, `'now'` the current-time marker, and `'event'`
+  the event start and end times in every view plus the details dialog. Use it to apply house
+  rules the locale data does not carry. The types `TTimeFormatter` and `TTimeFormatKind` and the
+  `useTimeFormatter()` hook (for custom renderers) are exported.
+
+### Upgrading
+
+No action is needed for the new prop. Expect these visible changes with no code change on your
+side:
+
+- 12-hour axis labels lose the leading zero (`08 AM` becomes `8 AM`).
+- Clock text follows `Intl` CLDR data for your `dateLocale` (`14:30` becomes `14 h 30` for fr-CA).
+  A hand-rolled `Locale` without a valid `code` keeps the previous pattern-based output.
+- Some ICU builds print a narrow no-break space (U+202F) before AM/PM. Snapshot or text
+  assertions that match a plain space may need `\s` or a normalising helper.
+
+If you need the previous output, or a house style, pass `formatTime`.
+
 ## 1.3.1
 
 Four display and interaction fixes. No prop removals and no breaking changes.

@@ -37,6 +37,7 @@ export { useVisibleHours } from '@/calendar/hooks/useVisibleHours'
 export { useCurrentTime } from '@/calendar/hooks/useCurrentTime'
 export { useDisclosure } from '@/calendar/hooks/useDisclosure'
 export { useUpdateEvent } from '@/calendar/hooks/useUpdateEvent'
+export { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 
 // Helpers
 export {
@@ -78,6 +79,8 @@ export type {
   IEventRenderContext,
   ICalendarClassNames,
   ICalendarCustomization,
+  TTimeFormatKind,
+  TTimeFormatter,
 } from '@/calendar/customization'
 
 // Labels

@@ -21,11 +21,8 @@ import DayViewMultiDayEventsRow from '@/calendar/components/day-view/DayViewMult
 import type { IEvent } from '@/calendar/interfaces'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
 import { useCalendarCustomization } from '@/calendar/customization'
-import {
-  formatDate as fmtDate,
-  formatHour as fmtHour,
-  formatTime as fmtTime,
-} from '@/calendar/date-format'
+import { formatDate as fmtDate } from '@/calendar/date-format'
+import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 
 /** Literal (Tailwind-scannable) classes for the four 15-minute slots at 96px/hour. */
 const STOCK_SLOT_CLASSES = [
@@ -52,6 +49,7 @@ export default function CalendarDayView({
 }: CalendarDayViewProps) {
   const labels = useCalendarLabels()
   const locale = useDateLocale()
+  const fmtTime = useTimeFormatter()
   const { hourHeight, height, autoHeight, classNames } = useCalendarCustomization()
   // Stock 96px hour keeps its literal Tailwind classes so default output is
   // byte-identical; a custom hourHeight switches to inline positioning.
@@ -106,7 +104,7 @@ export default function CalendarDayView({
   }
 
   function formatHour(hour: number): string {
-    return fmtHour(new Date(2000, 0, 1, hour, 0, 0, 0), locale)
+    return fmtTime(new Date(2000, 0, 1, hour, 0, 0, 0), 'axis')
   }
 
   function getEventStyle(event: IEvent, groupIndex: number) {
@@ -308,8 +306,8 @@ export default function CalendarDayView({
                               labels.allDay
                             ) : (
                               <>
-                                {fmtTime(parseISO(event.startDate), locale)} -{' '}
-                                {fmtTime(parseISO(event.endDate), locale)}
+                                {fmtTime(parseISO(event.startDate), 'event')} -{' '}
+                                {fmtTime(parseISO(event.endDate), 'event')}
                               </>
                             )}
                           </span>
