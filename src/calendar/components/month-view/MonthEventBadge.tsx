@@ -7,7 +7,7 @@ import type { IEvent } from '@/calendar/interfaces'
 import type { TLegacyEventColor } from '@/calendar/types'
 import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
 import { formatTime } from '@/calendar/date-format'
-import { isLegacyColor, useCalendarCustomization } from '@/calendar/customization'
+import { isLegacyColor, useCalendarCustomization, type TEventRenderView } from '@/calendar/customization'
 
 interface MonthEventBadgeProps {
   event: IEvent
@@ -17,6 +17,8 @@ interface MonthEventBadgeProps {
   className?: string
   position?: 'first' | 'middle' | 'last' | 'none'
   onOpenDetails?: (event: IEvent) => void
+  /** The view rendering this badge; week/day all-day strips reuse it. */
+  view?: TEventRenderView
 }
 
 const eventBadgeVariants = cva(
@@ -60,6 +62,7 @@ function MonthEventBadge({
   className,
   position,
   onOpenDetails,
+  view = 'month',
 }: MonthEventBadgeProps) {
   const labels = useCalendarLabels()
   const dateLocale = useDateLocale()
@@ -152,7 +155,7 @@ function MonthEventBadge({
       onClick={() => onOpenDetails?.(event)}
     >
       {renderer
-        ? renderer(event, { view: 'month', selected, badgeVariant, defaultContent })
+        ? renderer(event, { view, selected, badgeVariant, defaultContent })
         : defaultContent}
     </div>
   )

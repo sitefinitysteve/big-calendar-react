@@ -215,7 +215,8 @@ export default function BigCalendar({
   const handleOpenDetails = useCallback(
     (event: IEvent) => {
       onEventClick?.(event)
-      onSelectedEventChange?.(event)
+      // Clicking the already-selected event clears the selection.
+      onSelectedEventChange?.(selectedEventId != null && selectedEventId === event.id ? null : event)
       // Built-in read dialog is opt-out: set `openDetailsOnEventClick={false}` to
       // handle event clicks entirely in your own app.
       if (openDetailsOnEventClick) {
@@ -223,7 +224,7 @@ export default function BigCalendar({
         setDetailsOpen(true)
       }
     },
-    [onEventClick, onSelectedEventChange, openDetailsOnEventClick]
+    [onEventClick, onSelectedEventChange, openDetailsOnEventClick, selectedEventId]
   )
 
   const handleEdit = useCallback((event: IEvent) => {
@@ -374,7 +375,9 @@ export default function BigCalendar({
          <CalendarCustomizationContext.Provider value={customization}>
           <CalendarContextMenu commands={menuCommands} onSelect={handleCommandSelect}>
             <div
-              className={cn('overflow-hidden rounded-xl border', classNames?.root)}
+              // overflow-clip, not overflow-hidden: hidden makes the root a scroll container,
+              // which stops the week header's `sticky top-0` from pinning to the page.
+              className={cn('overflow-clip rounded-xl border', classNames?.root)}
               onContextMenuCapture={handleContextMenu}
             >
               {!hideHeader &&

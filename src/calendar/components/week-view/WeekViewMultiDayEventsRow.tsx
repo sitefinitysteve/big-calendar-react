@@ -152,6 +152,7 @@ export default function WeekViewMultiDayEventsRow({
                   cellDate={startOfDay(day)}
                   position={getPosition(dayIndex, event)}
                   onOpenDetails={onOpenDetails}
+                  view="week"
                 />
               ) : (
                 <div key={`${rowIndex}-${dayIndex}`} className="h-6.5" />

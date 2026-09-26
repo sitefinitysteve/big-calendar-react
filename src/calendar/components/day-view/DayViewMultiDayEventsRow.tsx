@@ -70,6 +70,7 @@ export default function DayViewMultiDayEventsRow({
               eventCurrentDay={eventTotalDays > 1 ? eventCurrentDay : undefined}
               eventTotalDays={eventTotalDays > 1 ? eventTotalDays : undefined}
               onOpenDetails={onOpenDetails}
+              view="day"
             />
           )
         })}

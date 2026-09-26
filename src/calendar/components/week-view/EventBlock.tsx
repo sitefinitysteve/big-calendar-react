@@ -87,7 +87,8 @@ function EventBlock({ event, className, view = 'week', onOpenDetails }: EventBlo
     variantClasses,
     durationInMinutes < 35 && 'py-0 justify-center',
     !legacy && 'bc-event-custom-color',
-    custom && selected && 'z-10',
+    // z-index needs a positioned box to apply.
+    custom && selected && 'relative z-10',
     classNames?.eventBlock,
     className
   )

@@ -145,6 +145,52 @@ describe('selection', () => {
     expect(block.style.minHeight).toBe('88px')
     expect(block.style.height).toBe('')
     expect(block.className).toContain('z-10')
+    // z-index is inert on a static box.
+    expect(block.className).toContain('relative')
+  })
+
+  it('emits null when the already-selected event is clicked again', () => {
+    const onSelectedEventChange = vi.fn()
+    const { container } = render(
+      <BigCalendar
+        view="week"
+        selectedEventId={1}
+        openDetailsOnEventClick={false}
+        onSelectedEventChange={onSelectedEventChange}
+      />
+    )
+
+    fireEvent.click(container.querySelector('[data-event-id="1"]')!)
+    expect(onSelectedEventChange).toHaveBeenCalledWith(null)
+  })
+
+  it('tells a renderer in the week all-day strip that it is in the week view', () => {
+    seed([makeEvent({ id: 5, startDate: iso(9, 0, 13), endDate: iso(10, 0, 16) })])
+    const views: string[] = []
+    render(
+      <BigCalendar
+        view="week"
+        renderEvent={(event, ctx) => {
+          views.push(ctx.view)
+          return <span>{event.title}</span>
+        }}
+      />
+    )
+
+    expect(views.length).toBeGreaterThan(0)
+    expect(views).not.toContain('month')
+    expect(views).toContain('week')
+  })
+
+  it('keeps the root a non-scrolling clip so the week header can stick', () => {
+    const { container } = render(<BigCalendar view="week" />)
+    const root = container.querySelector('.rounded-xl.border') as HTMLElement
+
+    expect(root.className).toContain('overflow-clip')
+    expect(root.className).not.toContain('overflow-hidden')
+    // The header's own wrapper must not be its containing block, or it un-sticks early.
+    const header = container.querySelector('.sticky.top-0') as HTMLElement
+    expect(header.parentElement!.className).toContain('contents')
   })
 })
 

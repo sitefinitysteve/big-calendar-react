@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.3.1
+
+Four display and interaction fixes. No prop removals and no breaking changes.
+
+### Fixed
+
+- **The week view header now stays pinned while you scroll.** The calendar root used
+  `overflow-hidden`, which makes it a scroll container, so the header's `sticky top-0` stuck to
+  the root instead of the page; a plain wrapper around the header was also acting as its
+  containing block. The root now uses `overflow-clip` (same rounded clipping, not a scroll
+  container) and the wrapper is `display: contents`.
+- **Clicking the already-selected event now clears the selection.** `onSelectedEventChange`
+  receives `null` when the selected event is clicked again, so a controlled `selectedEventId`
+  can toggle off.
+- **A selected custom-rendered event block now sits above its neighbours.** The `z-10` applied
+  to a selected block had no effect on a static box; the block is now `relative`.
+- **Custom event renderers in the week and day all-day strips receive the right `view`.** The
+  badge those strips reuse always reported `view: 'month'`; it now reports `'week'` or `'day'`.
+
+### Upgrading
+
+No action is needed. If your app worked around the week header by passing
+`classNames={{ root: '… overflow-clip' }}` (or an `overflow-clip` wrapper), you can drop that
+override: the root now clips without becoming a scroll container. Hosts that toggle a selected
+event with `selectedEventId` should expect `onSelectedEventChange(null)` on a second click.
+
 ## 1.3.0
 
 Two packaging correctness fixes. No component, prop, or markup changes: if your app already
