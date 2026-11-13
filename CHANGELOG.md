@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.4.1
+
+Dependency refresh. No API changes and no change to what the calendar renders; the published
+bundle still externalizes every peer.
+
+### Changed — peer ranges
+
+- **`@hookform/resolvers` now accepts `^6` and `^7`** as well as `^3`–`^5`, so apps on the newer
+  majors no longer hit a peer conflict. Verified against resolvers 7 + zod 4 by a new test that
+  runs `createEventSchema` through `zodResolver` and checks the localized validation messages.
+- The `lucide-react` range (`>=0.400.0`) already allowed 1.x; the calendar is now built and
+  type-checked against lucide-react 1.72, and every icon it imports still exists.
+
+### Changed — tooling (development only)
+
+- Vite 6 → 8, `@vitejs/plugin-react` 4 → 6, Vitest 3 → 5, `vite-plugin-dts` 4 → 5, jsdom 30 → 31.
+- TypeScript 5.9 → 7. `baseUrl` was removed from `tsconfig.json` (TS 7 drops it; `paths` were
+  already relative). `@typescript/typescript6` is installed alongside so `vite-plugin-dts` can
+  still use the TypeScript compiler API to emit declarations. The emitted `.d.ts` files are
+  unchanged apart from quote style.
+- Development copies of React 19.3, Base UI 1.9, react-hook-form 7.92, zustand 5.1, zod 4.6,
+  Tailwind 4.3.5, tailwind-merge 3.7 and react-day-picker 10.0.2.
+
 ## 1.4.0
 
 Calendars can start the week on Monday. One additive prop, no removals, and the default output is
