@@ -132,6 +132,7 @@ The built-in Add/Edit dialogs update the local Zustand store immediately (optimi
 | `labels` | `Partial<ICalendarLabels>` | `{}` | Override any user-facing string (see i18n). |
 | `showViewTooltips` | `boolean` | `true` | Toggle view-button tooltips. |
 | `dateLocale` | `date-fns` `Locale` | `en-US` patterns | Localizes every rendered date and time — month/day names **and** field order and clock convention. See [Date & time formatting](#date--time-formatting). |
+| `weekStartsOn` | `0 \| 1` | `0` | First day of the week: `0` = Sunday, `1` = Monday. Moves the month/year grids and weekday headers, the week view, the header range, and the date pickers together. See [Week start](#week-start). |
 | `formatTime` | `(date, kind) => string` | Intl clock from `dateLocale` | Formats every clock label yourself; `kind` is `'axis'`, `'now'` or `'event'`. See [Custom clock](#custom-clock-formattime). |
 | `navigateOnDayClick` | `boolean` | `true` | If `false`, a day click only fires `onDayClick` instead of switching to day view. |
 | `openDetailsOnEventClick` | `boolean` | `true` | If `false`, an event click only fires `onEventClick` without opening the details dialog. |
@@ -236,10 +237,20 @@ Custom event renderers can reach the same formatter through `useTimeFormatter()`
 The Add/Edit dialogs follow the same locale — the date field's trigger label and popover are
 localized, and the time fields drop the AM/PM control for a 24-hour locale.
 
-**Known limitation:** the week grid always starts on Sunday. `dateLocale` does not yet move it, so
-locales that start the week on Monday (`de`, `en-GB`) or Saturday (`ar`) still get a Sunday-first
-grid. This is deliberate for now — the month view's weekday header is a fixed `Sun`–`Sat` label
-list, and moving one view without the other would leave the calendar disagreeing with itself.
+### Week start
+
+The calendar is Sunday-first by default. Pass `weekStartsOn={1}` for a Monday-first calendar:
+
+```tsx
+import { enGB } from 'date-fns/locale'
+
+<BigCalendar view={view} onViewChange={setView} dateLocale={enGB} weekStartsOn={1} />
+```
+
+The week start is a prop rather than something read from `dateLocale`, so it applies to every
+surface at once: the month grid and its weekday header, the year view, the week view columns and
+range, the header range text, the day view's mini calendar, and the Add/Edit date pickers.
+Saturday-first weeks (`ar`) are not supported yet.
 
 Omitting `dateLocale` is not the same as passing `enUS`. With no locale the calendar uses its
 built-in US-English patterns, which is why the two English columns above differ on the agenda

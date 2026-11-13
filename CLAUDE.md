@@ -122,7 +122,8 @@ src/
 - `ICalendarLabels` (flat structure, ~90 keys); `DEFAULT_LABELS` provides English defaults
 - `BigCalendar` accepts a `labels` prop (`Partial<ICalendarLabels>`) — merged as `{ ...DEFAULT_LABELS, ...labels }` — override only what you need
 - `BigCalendar` accepts `dateLocale` (date-fns `Locale`) — localizes month/day names in `format()` calls
-- Provided via React contexts in `labels.ts`: `CalendarLabelsContext`, `CalendarFlagsContext` (`{ showViewTooltips }`), `CalendarDateLocaleContext`
+- `BigCalendar` accepts `weekStartsOn` (`0 | 1`, default `0`) — read via `useCalendarFlags()`; never call `startOfWeek`/`endOfWeek`/`isSameWeek`/`getDay()` grid math without it (use `useWeekStartsOn()`, and `rotateWeekdays` / `leadingDays` / `weekdayLabels` from helpers)
+- Provided via React contexts in `labels.ts`: `CalendarLabelsContext`, `CalendarFlagsContext` (`ICalendarFlags`: `{ showViewTooltips, weekStartsOn }`), `CalendarDateLocaleContext`
 - Child components read them via `useCalendarLabels()` / `useCalendarFlags()` / `useDateLocale()` — these return **plain values** (not refs), so use them directly
 - Function-valued labels for interpolation: `eventsCount`, `moreEvents`, `dayOfTotal`
 - Validation messages also use labels via `createEventSchema(labels)` factory

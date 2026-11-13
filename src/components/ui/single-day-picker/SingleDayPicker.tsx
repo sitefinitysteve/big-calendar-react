@@ -18,6 +18,8 @@ export interface SingleDayPickerProps {
    * locale's own `formatLong` — without one it silently renders US English.
    */
   locale?: Locale
+  /** First day of the week in the popover grid: `0` = Sunday (default), `1` = Monday. */
+  weekStartsOn?: 0 | 1
   className?: string
   id?: string
 }
@@ -28,6 +30,7 @@ export const SingleDayPicker: React.FC<SingleDayPickerProps> = ({
   placeholder = "Select a date",
   labelVariant = "PPP",
   locale,
+  weekStartsOn = 0,
   className,
   id,
 }) => {
@@ -67,11 +70,9 @@ export const SingleDayPicker: React.FC<SingleDayPickerProps> = ({
           selected={value}
           onSelect={handleSelect}
           locale={locale}
-          // The calendar grids are Sunday-first everywhere (the month view's
-          // weekday header is a fixed Sun..Sat label list). Pinning the popover
-          // to match keeps one product from showing two week starts at once.
-          // Drop this line when week-start becomes locale-driven throughout.
-          weekStartsOn={0}
+          // Pinned to the calendar's own week start (not the locale's) so the
+          // popover never disagrees with the month/week grids.
+          weekStartsOn={weekStartsOn}
         />
       </PopoverContent>
     </Popover>

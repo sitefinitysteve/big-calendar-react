@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { getEventsCount, navigateDate, rangeText } from '@/calendar/helpers'
 import type { IEvent } from '@/calendar/interfaces'
 import type { TCalendarView } from '@/calendar/types'
-import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn, useDateLocale } from '@/calendar/labels'
 
 interface DateNavigatorProps {
   view: TCalendarView
@@ -19,13 +19,17 @@ export default function DateNavigator({ view, events }: DateNavigatorProps) {
   const setSelectedDate = useCalendarStore((s) => s.setSelectedDate)
   const labels = useCalendarLabels()
   const dateLocale = useDateLocale()
+  const weekStartsOn = useWeekStartsOn()
 
   const month = useMemo(() => {
     const name = format(selectedDate, 'MMMM', dateLocale ? { locale: dateLocale } : undefined)
     return name.charAt(0).toUpperCase() + name.slice(1)
   }, [selectedDate, dateLocale])
   const year = selectedDate.getFullYear()
-  const eventCount = useMemo(() => getEventsCount(events, selectedDate, view), [events, selectedDate, view])
+  const eventCount = useMemo(
+    () => getEventsCount(events, selectedDate, view, weekStartsOn),
+    [events, selectedDate, view, weekStartsOn]
+  )
 
   function handlePrevious() {
     setSelectedDate(navigateDate(selectedDate, view, 'previous'))
@@ -54,7 +58,7 @@ export default function DateNavigator({ view, events }: DateNavigatorProps) {
         </Button>
 
         <p className="text-sm capitalize text-muted-foreground">
-          {rangeText(view, selectedDate, dateLocale)}
+          {rangeText(view, selectedDate, dateLocale, weekStartsOn)}
         </p>
 
         <Button

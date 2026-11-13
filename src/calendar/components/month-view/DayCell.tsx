@@ -6,7 +6,7 @@ import MonthEventBadge from '@/calendar/components/month-view/MonthEventBadge'
 import { cn } from '@/lib/utils'
 import { getMonthCellEvents } from '@/calendar/helpers'
 import type { ICalendarCell, IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn } from '@/calendar/labels'
 import { useCalendarCustomization } from '@/calendar/customization'
 
 interface DayCellProps {
@@ -29,6 +29,7 @@ function DayCell({
   onSelectDay,
 }: DayCellProps) {
   const labels = useCalendarLabels()
+  const weekStartsOn = useWeekStartsOn()
   const setSelectedDate = useCalendarStore((s) => s.setSelectedDate)
   const { maxEventsPerDayCell, onShowMore, classNames, dayCellClassName } =
     useCalendarCustomization()
@@ -38,7 +39,7 @@ function DayCell({
     [cell.date, events, eventPositions]
   )
 
-  const isSunday = cell.date.getDay() === 0
+  const isFirstColumn = cell.date.getDay() === weekStartsOn
   const isDefaultMax = maxEventsPerDayCell === DEFAULT_MAX_VISIBLE_EVENTS
   const positions = useMemo(
     () => Array.from({ length: maxEventsPerDayCell }, (_, i) => i),
@@ -63,7 +64,7 @@ function DayCell({
       data-date={format(cell.date, 'yyyy-MM-dd')}
       className={cn(
         'flex h-full flex-col gap-1 border-l border-t py-1.5 lg:pb-2 lg:pt-1',
-        isSunday && 'border-l-0',
+        isFirstColumn && 'border-l-0',
         classNames?.dayCell,
         dayCellClassName?.(cell.date)
       )}

@@ -19,7 +19,7 @@ import CalendarTimeline from '@/calendar/components/week-view/CalendarTimeline'
 import DayViewMultiDayEventsRow from '@/calendar/components/day-view/DayViewMultiDayEventsRow'
 
 import type { IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn, useDateLocale } from '@/calendar/labels'
 import { useCalendarCustomization } from '@/calendar/customization'
 import { formatDate as fmtDate } from '@/calendar/date-format'
 import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
@@ -49,6 +49,7 @@ export default function CalendarDayView({
 }: CalendarDayViewProps) {
   const labels = useCalendarLabels()
   const locale = useDateLocale()
+  const weekStartsOn = useWeekStartsOn()
   const fmtTime = useTimeFormatter()
   const { hourHeight, height, autoHeight, classNames } = useCalendarCustomization()
   // Stock 96px hour keeps its literal Tailwind classes so default output is
@@ -262,6 +263,8 @@ export default function CalendarDayView({
           mode="single"
           selected={selectedDate}
           onSelect={handleCalendarSelect}
+          locale={locale}
+          weekStartsOn={weekStartsOn}
         />
 
         {/* Happening now section */}

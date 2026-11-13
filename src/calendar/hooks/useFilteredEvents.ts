@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { parseISO, isSameDay } from 'date-fns'
+import { parseISO, isSameDay, startOfWeek, endOfWeek } from 'date-fns'
 import { useCalendarStore } from '@/stores/calendar'
-import type { TCalendarView } from '@/calendar/types'
+import type { TCalendarView, TWeekStartsOn } from '@/calendar/types'
 
-export function useFilteredEvents(view: TCalendarView) {
+export function useFilteredEvents(view: TCalendarView, weekStartsOn: TWeekStartsOn = 0) {
   const selectedDate = useCalendarStore((s) => s.selectedDate)
   const selectedUserId = useCalendarStore((s) => s.selectedUserId)
   const events = useCalendarStore((s) => s.events)
@@ -28,13 +28,8 @@ export function useFilteredEvents(view: TCalendarView) {
       }
 
       if (view === 'week') {
-        const dayOfWeek = selectedDate.getDay()
-        const weekStart = new Date(selectedDate)
-        weekStart.setDate(selectedDate.getDate() - dayOfWeek)
-        weekStart.setHours(0, 0, 0, 0)
-        const weekEnd = new Date(weekStart)
-        weekEnd.setDate(weekStart.getDate() + 6)
-        weekEnd.setHours(23, 59, 59, 999)
+        const weekStart = startOfWeek(selectedDate, { weekStartsOn })
+        const weekEnd = endOfWeek(selectedDate, { weekStartsOn })
         return eventStartDate <= weekEnd && eventEndDate >= weekStart && isUserMatch
       }
 
@@ -46,7 +41,7 @@ export function useFilteredEvents(view: TCalendarView) {
 
       return false
     })
-  }, [events, selectedDate, selectedUserId, view])
+  }, [events, selectedDate, selectedUserId, view, weekStartsOn])
 
   const singleDayEvents = useMemo(
     () =>

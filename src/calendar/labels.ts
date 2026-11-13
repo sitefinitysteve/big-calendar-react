@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { Locale } from 'date-fns'
+import type { TWeekStartsOn } from '@/calendar/types'
 
 export interface ICalendarLabels {
   // Views
@@ -239,8 +240,16 @@ export const DEFAULT_LABELS: ICalendarLabels = {
  */
 export const CalendarLabelsContext = createContext<ICalendarLabels>(DEFAULT_LABELS)
 
-/** Toggles view-button tooltips. Provider-supplied; defaults to `true`. */
-export const CalendarFlagsContext = createContext<{ showViewTooltips: boolean }>({ showViewTooltips: true })
+/** Display flags supplied by `BigCalendar`. */
+export interface ICalendarFlags {
+  /** Toggles view-button tooltips. Default `true`. */
+  showViewTooltips: boolean
+  /** First day of the week for every grid and range. Default `0` (Sunday). */
+  weekStartsOn: TWeekStartsOn
+}
+
+/** Provider-supplied display flags; defaults keep components usable outside a provider. */
+export const CalendarFlagsContext = createContext<ICalendarFlags>({ showViewTooltips: true, weekStartsOn: 0 })
 
 /** date-fns locale used to localize `format()` calls; `undefined` = default. */
 export const CalendarDateLocaleContext = createContext<Locale | undefined>(undefined)
@@ -249,8 +258,13 @@ export function useCalendarLabels(): ICalendarLabels {
   return useContext(CalendarLabelsContext)
 }
 
-export function useCalendarFlags() {
+export function useCalendarFlags(): ICalendarFlags {
   return useContext(CalendarFlagsContext)
+}
+
+/** The nearest `BigCalendar`'s `weekStartsOn`; `0` (Sunday) outside a provider. */
+export function useWeekStartsOn(): TWeekStartsOn {
+  return useContext(CalendarFlagsContext).weekStartsOn
 }
 
 export function useDateLocale(): Locale | undefined {

@@ -4,7 +4,8 @@ import { useCalendarStore } from '@/stores/calendar'
 import { cn } from '@/lib/utils'
 import YearViewDayCell from '@/calendar/components/year-view/YearViewDayCell'
 import type { IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn, useDateLocale } from '@/calendar/labels'
+import { leadingDays, weekdayLabels } from '@/calendar/helpers'
 
 interface YearViewMonthProps {
   month: Date
@@ -21,18 +22,11 @@ function YearViewMonth({
 }: YearViewMonthProps) {
   const labels = useCalendarLabels()
   const locale = useDateLocale()
+  const weekStartsOn = useWeekStartsOn()
 
   const setSelectedDate = useCalendarStore((s) => s.setSelectedDate)
 
-  const WEEK_DAYS = [
-    labels.weekdaySun,
-    labels.weekdayMon,
-    labels.weekdayTue,
-    labels.weekdayWed,
-    labels.weekdayThu,
-    labels.weekdayFri,
-    labels.weekdaySat,
-  ]
+  const WEEK_DAYS = useMemo(() => weekdayLabels(labels, weekStartsOn), [labels, weekStartsOn])
 
   const monthName = useMemo(() => {
     const name = format(month, 'MMMM', { locale })
@@ -40,15 +34,14 @@ function YearViewMonth({
   }, [month, locale])
 
   const days = useMemo(() => {
-    const firstDay = startOfMonth(month)
-    const dayOfWeek = firstDay.getDay()
+    const dayOfWeek = leadingDays(month, weekStartsOn)
     const totalDays = getDaysInMonth(month)
 
     const blanks: null[] = Array.from({ length: dayOfWeek }, () => null)
     const dayNumbers = Array.from({ length: totalDays }, (_, i) => i + 1)
 
     return [...blanks, ...dayNumbers]
-  }, [month])
+  }, [month, weekStartsOn])
 
   function getDateForDay(day: number): Date {
     return new Date(month.getFullYear(), month.getMonth(), day)

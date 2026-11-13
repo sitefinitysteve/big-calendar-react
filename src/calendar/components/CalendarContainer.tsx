@@ -3,7 +3,7 @@ import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import { format } from 'date-fns'
 import type { Locale } from 'date-fns'
 import { Pencil, Trash2 } from 'lucide-react'
-import type { TCalendarView } from '@/calendar/types'
+import type { TCalendarView, TWeekStartsOn } from '@/calendar/types'
 import type { IEvent, ICalendarCommand, ICalendarCommandSelect } from '@/calendar/interfaces'
 import type { ICalendarLabels } from '@/calendar/labels'
 import {
@@ -46,6 +46,8 @@ export interface BigCalendarProps {
   labels?: Partial<ICalendarLabels>
   showViewTooltips?: boolean
   dateLocale?: Locale
+  /** First day of the week for every grid, range and date picker: `0` = Sunday (default), `1` = Monday. */
+  weekStartsOn?: TWeekStartsOn
   navigateOnDayClick?: boolean
   openDetailsOnEventClick?: boolean
 
@@ -129,6 +131,7 @@ export default function BigCalendar({
   labels,
   showViewTooltips = true,
   dateLocale,
+  weekStartsOn = 0,
   navigateOnDayClick = true,
   openDetailsOnEventClick = true,
   eventCommands = [],
@@ -163,7 +166,7 @@ export default function BigCalendar({
   const deleteEvent = useCalendarStore((s) => s.deleteEvent)
 
   const mergedLabels = useMemo(() => ({ ...DEFAULT_LABELS, ...labels }), [labels])
-  const flags = useMemo(() => ({ showViewTooltips }), [showViewTooltips])
+  const flags = useMemo(() => ({ showViewTooltips, weekStartsOn }), [showViewTooltips, weekStartsOn])
 
   const customization = useMemo<ICalendarCustomization>(
     () => ({
@@ -198,7 +201,7 @@ export default function BigCalendar({
     ]
   )
 
-  const { filteredEvents, singleDayEvents, multiDayEvents } = useFilteredEvents(view)
+  const { filteredEvents, singleDayEvents, multiDayEvents } = useFilteredEvents(view, weekStartsOn)
 
   // Dialog state
   const [detailsOpen, setDetailsOpen] = useState(false)

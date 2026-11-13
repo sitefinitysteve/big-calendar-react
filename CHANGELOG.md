@@ -1,5 +1,37 @@
 # Changelog
 
+## 1.4.0
+
+Calendars can start the week on Monday. One additive prop, no removals, and the default output is
+unchanged.
+
+### Added
+
+- **`weekStartsOn?: 0 | 1`** on `BigCalendar` (default `0`, Sunday). Pass `1` for a Monday-first
+  calendar (en-GB, most of Europe). It moves every surface together so the calendar never disagrees
+  with itself: the month grid's leading days and weekday header, each month in the year view, the
+  week view's columns and its all-day strip, the header's range text and event count, which events
+  the week view loads, the day view's mini calendar, and the date pickers in the Add/Edit dialogs.
+- A **`useWeekStartsOn()`** hook for custom renderers and standalone components (returns `0`
+  outside a `BigCalendar`); `useCalendarFlags()` also carries `weekStartsOn`. The
+  `TWeekStartsOn` and `ICalendarFlags` types are exported.
+- `SingleDayPicker` accepts `weekStartsOn` (default `0`).
+- Two helpers, `rotateWeekdays(sundayFirst, weekStartsOn?)` and `leadingDays(date, weekStartsOn?)`
+  (same names and signatures as the Vue port).
+- `rangeText`, `getEventsCount`, `getCalendarCells`, `useCalendarGrid` and `useFilteredEvents` take
+  an optional trailing `weekStartsOn` argument that defaults to `0`, so existing calls are unchanged.
+
+### Fixed
+
+- **The day view's mini calendar follows `dateLocale`.** It never received the locale, so its month
+  and weekday names stayed English (`Sunday` under fr-CA). It now uses the same locale as the rest
+  of the calendar (`dimanche`).
+
+### Upgrading
+
+No action is needed. The week start is not derived from `dateLocale`; pass `weekStartsOn={1}`
+alongside an en-GB (or similar) locale to get a Monday-first grid.
+
 ## 1.3.2
 
 Clock labels now follow the locale's own clock, and hosts can format them. One additive prop, no

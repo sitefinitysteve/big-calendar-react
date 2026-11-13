@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/dialog'
 import { createEventSchema } from '@/calendar/schemas'
 import type { TEventFormData } from '@/calendar/schemas'
-import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn, useDateLocale } from '@/calendar/labels'
 
 interface AddEventDialogProps {
   open: boolean
@@ -60,6 +60,7 @@ export default function AddEventDialog({
   const addEvent = useCalendarStore((s) => s.addEvent)
   const labels = useCalendarLabels()
   const dateLocale = useDateLocale()
+  const weekStartsOn = useWeekStartsOn()
 
   const schema = useMemo(() => createEventSchema(labels), [labels])
 
@@ -250,6 +251,7 @@ export default function AddEventDialog({
                     <FormControl>
                       <SingleDayPicker
                         locale={dateLocale}
+                        weekStartsOn={weekStartsOn}
                         value={field.value}
                         placeholder={labels.placeholderSelectDate}
                         onChange={field.onChange}
@@ -287,6 +289,7 @@ export default function AddEventDialog({
                     <FormControl>
                       <SingleDayPicker
                         locale={dateLocale}
+                        weekStartsOn={weekStartsOn}
                         value={field.value}
                         placeholder={labels.placeholderSelectDate}
                         onChange={field.onChange}

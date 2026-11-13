@@ -4,7 +4,8 @@ import { useCalendarGrid } from '@/calendar/hooks/useCalendarGrid'
 import { useEventPositioning } from '@/calendar/hooks/useEventPositioning'
 import DayCell from '@/calendar/components/month-view/DayCell'
 import type { IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn } from '@/calendar/labels'
+import { weekdayLabels } from '@/calendar/helpers'
 import { useCalendarCustomization } from '@/calendar/customization'
 
 interface CalendarMonthViewProps {
@@ -21,10 +22,11 @@ export default function CalendarMonthView({
   onSelectDay,
 }: CalendarMonthViewProps) {
   const labels = useCalendarLabels()
+  const weekStartsOn = useWeekStartsOn()
   const selectedDate = useCalendarStore((s) => s.selectedDate)
   const { maxEventsPerDayCell } = useCalendarCustomization()
 
-  const { cells } = useCalendarGrid(selectedDate)
+  const { cells } = useCalendarGrid(selectedDate, weekStartsOn)
   const { eventPositions } = useEventPositioning(
     multiDayEvents,
     singleDayEvents,
@@ -37,15 +39,7 @@ export default function CalendarMonthView({
     [multiDayEvents, singleDayEvents]
   )
 
-  const WEEK_DAYS = [
-    labels.weekdaySun,
-    labels.weekdayMon,
-    labels.weekdayTue,
-    labels.weekdayWed,
-    labels.weekdayThu,
-    labels.weekdayFri,
-    labels.weekdaySat,
-  ]
+  const WEEK_DAYS = useMemo(() => weekdayLabels(labels, weekStartsOn), [labels, weekStartsOn])
 
   return (
     <div>

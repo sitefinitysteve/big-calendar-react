@@ -6,7 +6,7 @@ import './assets/styles/globals.css'
 import BigCalendar from '@/calendar/components/CalendarContainer'
 import { useCalendarStore } from '@/stores/calendar'
 import { USERS_MOCK, CALENDAR_ITEMS_MOCK } from '@/calendar/mocks'
-import type { TCalendarView } from '@/calendar/types'
+import type { TCalendarView, TWeekStartsOn } from '@/calendar/types'
 import type { IEvent, ICalendarCommand, ICalendarCommandSelect } from '@/calendar/interfaces'
 import { Button } from '@/components/ui/button'
 import {
@@ -50,6 +50,7 @@ function App() {
   const { currentLabels, currentDateLocale } = useLocale()
 
   const [view, setView] = useState<TCalendarView>('month')
+  const [weekStartsOn, setWeekStartsOn] = useState<TWeekStartsOn>(0)
 
   const [lastDayClick, setLastDayClick] = useState<string | null>(null)
   const [lastEventClick, setLastEventClick] = useState<string | null>(null)
@@ -138,6 +139,7 @@ function App() {
             onViewChange={setView}
             labels={currentLabels}
             dateLocale={currentDateLocale}
+            weekStartsOn={weekStartsOn}
             availableViews={availableViews}
             showUserSelect={showUserSelect}
             canAdd={canAdd}
@@ -155,7 +157,7 @@ function App() {
           />
         </div>
 
-        <div className="flex justify-start">
+        <div className="flex justify-start gap-2">
           <Dialog>
             <DialogTrigger
               render={
@@ -184,6 +186,15 @@ function App() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <Button
+            variant="outline"
+            size="sm"
+            aria-pressed={weekStartsOn === 1}
+            onClick={() => setWeekStartsOn((w) => (w === 1 ? 0 : 1))}
+          >
+            Week starts on: {weekStartsOn === 1 ? 'Monday' : 'Sunday'}
+          </Button>
         </div>
       </div>
     </>

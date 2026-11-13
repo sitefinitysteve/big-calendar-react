@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils'
 import MonthEventBadge from '@/calendar/components/month-view/MonthEventBadge'
 import type { IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn } from '@/calendar/labels'
 import { useCalendarCustomization } from '@/calendar/customization'
 
 /** One badge row: `h-6.5` (26px) plus the `gap-1` (4px) that follows it. */
@@ -41,8 +41,9 @@ export default function WeekViewMultiDayEventsRow({
 }: WeekViewMultiDayEventsRowProps) {
   const labels = useCalendarLabels()
   const { allDayMaxRows } = useCalendarCustomization()
-  const weekStart = useMemo(() => startOfWeek(selectedDate), [selectedDate])
-  const weekEnd = useMemo(() => endOfWeek(selectedDate), [selectedDate])
+  const weekStartsOn = useWeekStartsOn()
+  const weekStart = useMemo(() => startOfWeek(selectedDate, { weekStartsOn }), [selectedDate, weekStartsOn])
+  const weekEnd = useMemo(() => endOfWeek(selectedDate, { weekStartsOn }), [selectedDate, weekStartsOn])
   const weekDays = useMemo(
     () => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)),
     [weekStart]

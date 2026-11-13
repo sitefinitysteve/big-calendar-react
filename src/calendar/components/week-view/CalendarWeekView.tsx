@@ -16,7 +16,7 @@ import EventBlock from '@/calendar/components/week-view/EventBlock'
 import CalendarTimeline from '@/calendar/components/week-view/CalendarTimeline'
 import WeekViewMultiDayEventsRow from '@/calendar/components/week-view/WeekViewMultiDayEventsRow'
 import type { IEvent } from '@/calendar/interfaces'
-import { useCalendarLabels, useDateLocale } from '@/calendar/labels'
+import { useCalendarLabels, useWeekStartsOn, useDateLocale } from '@/calendar/labels'
 import { useTimeFormatter } from '@/calendar/hooks/useTimeFormatter'
 import { useCalendarCustomization } from '@/calendar/customization'
 
@@ -45,6 +45,7 @@ export default function CalendarWeekView({
 }: CalendarWeekViewProps) {
   const labels = useCalendarLabels()
   const locale = useDateLocale()
+  const weekStartsOn = useWeekStartsOn()
   const formatTime = useTimeFormatter()
   const { hourHeight, height, autoHeight, classNames } = useCalendarCustomization()
   // Stock 96px hour keeps its literal Tailwind classes so default output is
@@ -70,9 +71,9 @@ export default function CalendarWeekView({
     singleDayEvents
   )
 
-  const weekStart = startOfWeek(selectedDate)
+  const weekStart = startOfWeek(selectedDate, { weekStartsOn })
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
-  const showsToday = isSameWeek(selectedDate, new Date())
+  const showsToday = isSameWeek(selectedDate, new Date(), { weekStartsOn })
 
   function getDayEvents(day: Date): IEvent[] {
     return singleDayEvents.filter(

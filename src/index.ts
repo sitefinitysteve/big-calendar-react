@@ -52,6 +52,8 @@ export {
   getCalendarCells,
   calculateMonthEventPositions,
   getMonthCellEvents,
+  rotateWeekdays,
+  leadingDays,
 } from '@/calendar/helpers'
 
 // Types & Interfaces
@@ -62,6 +64,7 @@ export type {
   TBadgeVariant,
   TWorkingHours,
   TVisibleHours,
+  TWeekStartsOn,
 } from '@/calendar/types'
 export type { IEvent, IUser, ICalendarCell, ICalendarCommand, ICalendarCommandSelect } from '@/calendar/interfaces'
 
@@ -84,11 +87,12 @@ export type {
 } from '@/calendar/customization'
 
 // Labels
-export type { ICalendarLabels } from '@/calendar/labels'
+export type { ICalendarLabels, ICalendarFlags } from '@/calendar/labels'
 export {
   DEFAULT_LABELS,
   useCalendarLabels,
   useCalendarFlags,
+  useWeekStartsOn,
   useDateLocale,
   CalendarLabelsContext,
   CalendarFlagsContext,
